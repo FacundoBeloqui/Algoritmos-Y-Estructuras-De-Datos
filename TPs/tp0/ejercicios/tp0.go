@@ -55,12 +55,9 @@ func Comparar(vector1 []int, vector2 []int) int {
 
 // Seleccion ordena el arreglo recibido mediante el algoritmo de selección.
 func Seleccion(vector []int) {
-	for i := 0; i < len(vector)-1; i++ {
-		for j := i + 1; j < len(vector); j++ {
-			if vector[i] > vector[j] {
-				vector[i], vector[j] = vector[j], vector[i]
-			}
-		}
+	for i := 0; i < len(vector); i++ {
+		max_posicion := Maximo(vector[:len(vector)-i])
+		vector[max_posicion], vector[len(vector)-i-1] = vector[len(vector)-i-1], vector[max_posicion]
 	}
 }
 
@@ -81,7 +78,7 @@ func EsCadenaCapicua(cadena string) bool {
 	if len(cadena) == 0 || len(cadena) == 1 {
 		return true
 	}
-	if cadena[:1] == cadena[len(cadena)-1:] {
+	if cadena[0] == cadena[len(cadena)-1] {
 		return EsCadenaCapicua(cadena[1 : len(cadena)-1])
 	}
 	return false

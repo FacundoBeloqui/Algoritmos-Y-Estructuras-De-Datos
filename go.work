@@ -3,6 +3,7 @@ go 1.24.1
 use (
 	./Guia
 	./TDAs
+	./TPs/tp0
 	./TPs/tp1
 	./TPs/tp2
 	./TPs/tp3

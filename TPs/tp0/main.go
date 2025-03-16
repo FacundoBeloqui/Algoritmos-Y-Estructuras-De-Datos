@@ -43,7 +43,7 @@ func main() {
 			fmt.Printf("%d\n", vector1[i])
 		}
 
-	} else if comparacion == -1 {
+	} else {
 		ejercicios.Seleccion(vector2)
 		for i := 0; i < len(vector2); i++ {
 			fmt.Printf("%d\n", vector2[i])

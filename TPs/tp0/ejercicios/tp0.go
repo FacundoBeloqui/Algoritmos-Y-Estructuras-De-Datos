@@ -57,7 +57,7 @@ func Comparar(vector1 []int, vector2 []int) int {
 func Seleccion(vector []int) {
 	for i := 0; i < len(vector); i++ {
 		max_posicion := Maximo(vector[:len(vector)-i])
-		vector[max_posicion], vector[len(vector)-i-1] = vector[len(vector)-i-1], vector[max_posicion]
+		Swap(&vector[max_posicion], &vector[len(vector)-i-1])
 	}
 }
 

@@ -8,8 +8,8 @@ import (
 	"tp0/ejercicios"
 )
 
-const ruta1 = "archivo1.in"
-const ruta2 = "archivo2.in"
+const RUTA1 = "archivo1.in"
+const RUTA2 = "archivo2.in"
 
 func leerArchivo(ruta string) []int {
 	var vectorOrdenado []int
@@ -34,8 +34,8 @@ func leerArchivo(ruta string) []int {
 }
 
 func main() {
-	vector1 := leerArchivo(ruta1)
-	vector2 := leerArchivo(ruta2)
+	vector1 := leerArchivo(RUTA1)
+	vector2 := leerArchivo(RUTA2)
 	comparacion := ejercicios.Comparar(vector1, vector2)
 	if comparacion == 1 {
 		ejercicios.Seleccion(vector1)

@@ -6,11 +6,12 @@ type pilaDinamica[T any] struct {
 	cantidad int
 }
 
-func Redimensionar[T any](capacidad int, p *pilaDinamica[T]) {
+func redimensionar[T any](capacidad int, p *pilaDinamica[T]) {
 	nuevosDatos := make([]T, capacidad)
 	copy(nuevosDatos, p.datos)
 	p.datos = nuevosDatos
 }
+
 func aumentarCapacidad[T any](p *pilaDinamica[T]) {
 	capacidad := len(p.datos)
 	if capacidad == 0 {
@@ -18,13 +19,13 @@ func aumentarCapacidad[T any](p *pilaDinamica[T]) {
 	} else {
 		capacidad *= 2
 	}
-	Redimensionar(capacidad, p)
+	redimensionar(capacidad, p)
 }
 
 func disminuirCapacidad[T any](p *pilaDinamica[T]) {
 	capacidad := len(p.datos)
 	capacidad /= 2
-	Redimensionar(capacidad, p)
+	redimensionar(capacidad, p)
 }
 
 func (p *pilaDinamica[T]) EstaVacia() bool {
@@ -59,9 +60,8 @@ func (p *pilaDinamica[T]) Desapilar() T {
 }
 
 func CrearPilaDinamica[T any]() Pila[T] {
-	pilaDin := &pilaDinamica[T]{
+	return &pilaDinamica[T]{
 		datos:    make([]T, 0),
 		cantidad: 0,
 	}
-	return pilaDin
 }

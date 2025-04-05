@@ -1,9 +1,9 @@
 package pila
 
 const CAPACIDAD_INICIAL = 1
-const DOBLE = 2
-const MITAD = 2
-const CUADRUPLE = 4
+const MULTIPLO_CRECIMIENTO = 2
+const MULTIPLO_REDUCCION = 2
+const FACTOR_REDUCCION = 4
 
 /* Definición del struct pila proporcionado por la cátedra. */
 
@@ -39,7 +39,7 @@ func (p *pilaDinamica[T]) VerTope() T {
 
 func (p *pilaDinamica[T]) Apilar(t T) {
 	if p.cantidad == len(p.datos) {
-		redimensionar(p, len(p.datos)*DOBLE)
+		redimensionar(p, len(p.datos)*MULTIPLO_CRECIMIENTO)
 	}
 	p.datos[p.cantidad] = t
 	p.cantidad++
@@ -49,8 +49,8 @@ func (p *pilaDinamica[T]) Desapilar() T {
 	if p.EstaVacia() {
 		panic("La pila esta vacia")
 	}
-	if p.cantidad*CUADRUPLE <= len(p.datos) {
-		redimensionar(p, len(p.datos)/MITAD)
+	if p.cantidad*FACTOR_REDUCCION <= len(p.datos) {
+		redimensionar(p, len(p.datos)/MULTIPLO_REDUCCION)
 	}
 	p.cantidad--
 	return p.datos[p.cantidad]

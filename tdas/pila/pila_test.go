@@ -45,7 +45,7 @@ func TestPilaComprobarLIFO(t *testing.T) {
 	require.PanicsWithValue(t, "La pila esta vacia", func() { pila.Desapilar() }, "me fijo que no pueda desapilar una pila vacia")
 }
 
-func TestPruebaDeVolumen(t *testing.T) {
+func TestPruebaDeVolumenPila(t *testing.T) {
 	pila := TDAPila.CrearPilaDinamica[int]()
 	for i := 0; i < 10000; i++ {
 		pila.Apilar(i)

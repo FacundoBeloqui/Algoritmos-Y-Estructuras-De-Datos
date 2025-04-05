@@ -2,10 +2,15 @@ package main
 
 import (
 	"fmt"
-	"tdas/pila"
+	"tdas/cola"
 )
 
 func main() {
-	pila1 := pila.CrearPilaDinamica[string]()
-	fmt.Println("mensaje:", pila1.Desapilar())
+
+	cola1 := cola.CrearColaEnlazada[int]()
+	cola1.Encolar(1)
+	fmt.Println(cola1.EstaVacia())
+	cola1.Desencolar()
+	fmt.Println(cola1.EstaVacia())
+
 }

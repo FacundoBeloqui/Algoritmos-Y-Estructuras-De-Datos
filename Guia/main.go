@@ -1,7 +1,12 @@
 package main
 
-import "fmt"
+import (
+	"Guia/division_y_conquista"
+	"fmt"
+)
 
 func main() {
-	fmt.Println("Hello World!")
+	arreglo := []int{4, 5, 8, 2, 7}
+	numeroMaximo := division_y_conquista.Maximo(arreglo)
+	fmt.Println(numeroMaximo)
 }

@@ -11,12 +11,6 @@ func TestColaVacia(t *testing.T) {
 	require.PanicsWithValue(t, "La cola esta vacia", func() { cola.VerPrimero() }, "me fijo que no pueda ver el primero una cola vacia")
 	require.PanicsWithValue(t, "La cola esta vacia", func() { cola.Desencolar() }, "me fijo que no pueda desencolar una cola vacia")
 	require.True(t, cola.EstaVacia())
-	cola.Encolar(1)
-	require.False(t, cola.EstaVacia())
-	cola.Desencolar()
-	require.True(t, cola.EstaVacia())
-	require.PanicsWithValue(t, "La cola esta vacia", func() { cola.VerPrimero() }, "me fijo que no pueda ver el primero una cola vacia")
-	require.PanicsWithValue(t, "La cola esta vacia", func() { cola.Desencolar() }, "me fijo que no pueda desencolar una cola vacia")
 }
 
 func TestColaComprobarFIFO(t *testing.T) {
@@ -44,15 +38,26 @@ func TestPruebaDeVolumenCola(t *testing.T) {
 	}
 	require.True(t, cola.EstaVacia())
 }
-
-func TestEncolarDistintosTiposDeDato(t *testing.T) {
+func TestDesencolarHastaVacia(t *testing.T) {
+	cola := TDACola.CrearColaEnlazada[int]()
+	cola.Encolar(1)
+	cola.Desencolar()
+	require.PanicsWithValue(t, "La cola esta vacia", func() { cola.VerPrimero() }, "me fijo que no pueda ver el primero una cola vacia")
+	require.PanicsWithValue(t, "La cola esta vacia", func() { cola.Desencolar() }, "me fijo que no pueda desencolar una cola vacia")
+	require.True(t, cola.EstaVacia())
+}
+func TestEncolarEnteros(t *testing.T) {
 	colaEnteros := TDACola.CrearColaEnlazada[int]()
-	colaCadenas := TDACola.CrearColaEnlazada[string]()
-	colaFloats := TDACola.CrearColaEnlazada[float64]()
 	colaEnteros.Encolar(1)
-	colaCadenas.Encolar("Hola")
-	colaFloats.Encolar(3.14)
 	require.EqualValues(t, colaEnteros.VerPrimero(), 1)
+}
+func TestEncolarStrings(t *testing.T) {
+	colaCadenas := TDACola.CrearColaEnlazada[string]()
+	colaCadenas.Encolar("Hola")
 	require.EqualValues(t, colaCadenas.VerPrimero(), "Hola")
+}
+func TestEncolarFloats(t *testing.T) {
+	colaFloats := TDACola.CrearColaEnlazada[float64]()
+	colaFloats.Encolar(3.14)
 	require.EqualValues(t, colaFloats.VerPrimero(), 3.14)
 }

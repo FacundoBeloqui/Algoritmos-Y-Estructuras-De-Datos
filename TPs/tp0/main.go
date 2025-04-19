@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"os"
 	"strconv"
-	"tp0/ejercicios"
 )
 
 const RUTA1 = "archivo1.in"
@@ -34,19 +33,8 @@ func leerArchivo(ruta string) []int {
 }
 
 func main() {
-	vector1 := leerArchivo(RUTA1)
-	vector2 := leerArchivo(RUTA2)
-	comparacion := ejercicios.Comparar(vector1, vector2)
-	if comparacion == 1 {
-		ejercicios.Seleccion(vector1)
-		for i := 0; i < len(vector1); i++ {
-			fmt.Printf("%d\n", vector1[i])
-		}
-
-	} else {
-		ejercicios.Seleccion(vector2)
-		for i := 0; i < len(vector2); i++ {
-			fmt.Printf("%d\n", vector2[i])
-		}
-	}
+	fmt.Println("Ingrese un input")
+	s := bufio.NewScanner(os.Stdin)
+	s.Scan()
+	fmt.Printf("Leí: %s\n", s.Text())
 }

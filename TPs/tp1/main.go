@@ -11,10 +11,6 @@ import (
 
 func main() {
 	s := bufio.NewScanner(os.Stdin)
-	err := os.Stderr
-	if err != nil {
-		fmt.Printf("Error: %v\n", err)
-	}
 	var lineas []string
 	for s.Scan() {
 		lineas = append(lineas, s.Text())

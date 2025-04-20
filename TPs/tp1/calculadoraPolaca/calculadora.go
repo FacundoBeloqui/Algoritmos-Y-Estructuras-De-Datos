@@ -6,6 +6,11 @@ import (
 	"tdas/pila"
 )
 
+const PRECEDENCIA_SUMA_RESTA = 2
+const PRECEDENCIA_MULT_DIV = 3
+const PRECEDENCIA_EXPONENCIAL = 4
+const PRECEDENCIA_NUMERO = 0
+
 type Caracter struct {
 	precedencia int
 	Simbolo     rune
@@ -22,17 +27,17 @@ func SepararCadena(cadena string) []string {
 func DeterminarCaracter(c rune) Caracter {
 	switch c {
 	case '+':
-		return Caracter{2, '+'}
+		return Caracter{PRECEDENCIA_SUMA_RESTA, c}
 	case '-':
-		return Caracter{2, '-'}
+		return Caracter{PRECEDENCIA_SUMA_RESTA, c}
 	case '*':
-		return Caracter{3, '*'}
+		return Caracter{PRECEDENCIA_MULT_DIV, c}
 	case '/':
-		return Caracter{3, '/'}
+		return Caracter{PRECEDENCIA_MULT_DIV, c}
 	case '^':
-		return Caracter{4, '^'}
+		return Caracter{PRECEDENCIA_EXPONENCIAL, c}
 	default:
-		return Caracter{0, c}
+		return Caracter{PRECEDENCIA_NUMERO, c}
 	}
 }
 

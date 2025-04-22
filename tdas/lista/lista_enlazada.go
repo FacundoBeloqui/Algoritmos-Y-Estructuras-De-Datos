@@ -87,14 +87,24 @@ func (l *listaEnlazada[T]) Largo() int {
 	return l.largo
 }
 
-func (l listaEnlazada[T]) Iterar(visitar func(T) bool) {
-	//TODO implement me
-	panic("implement me")
+func visitar[T any](dato T) bool {
+
 }
 
-func (l listaEnlazada[T]) Iterador() IteradorLista[T] {
-	//TODO implement me
-	panic("implement me")
+func (l *listaEnlazada[T]) Iterar(visitar func(T) bool) {
+	for nodo := l.primero; nodo != nil; nodo = nodo.siguiente {
+		if !visitar(nodo.dato) {
+			break
+		}
+	}
+}
+
+func (l *listaEnlazada[T]) Iterador() IteradorLista[T] {
+	return &iterListaEnlazada[T]{
+		actual:   l.primero,
+		anterior: nil,
+		lista:    l,
+	}
 }
 
 func (i *iterListaEnlazada[T]) VerActual() T {

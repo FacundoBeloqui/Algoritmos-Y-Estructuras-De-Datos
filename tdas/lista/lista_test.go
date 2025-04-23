@@ -94,3 +94,101 @@ func TestIteradorInternoCorteFalse(t *testing.T) {
 	esperado := []int{10, 20, 30}
 	require.Equal(t, esperado, vistos)
 }
+func TestSeInsertaAlPrincipioAlCrearIteradorExterno(t *testing.T) {
+	lista := TDALIsta.CrearListaEnlazada[int]()
+	iterador := lista.Iterador()
+	iterador.Insertar(1)
+	require.Equal(t, lista.VerPrimero(), 1)
+}
+
+func TestInsertarAlFinalIteradorExterno(t *testing.T) {
+	lista := TDALIsta.CrearListaEnlazada[int]()
+	iterador := lista.Iterador()
+	lista.InsertarPrimero(1)
+	lista.InsertarUltimo(2)
+	for iterador.HaySiguiente() {
+		iterador.Siguiente()
+	}
+	iterador.Insertar(3)
+	require.Equal(t, 3, lista.VerUltimo())
+}
+func TestInsertarEnElMedioIteradorExterno(t *testing.T) {
+	lista := TDALIsta.CrearListaEnlazada[int]()
+	lista.InsertarPrimero(1)
+	lista.InsertarUltimo(2)
+	lista.InsertarUltimo(4)
+	lista.InsertarUltimo(5)
+
+	iterador := lista.Iterador()
+	contador := 0
+	largoOriginal := lista.Largo()
+
+	for iterador.HaySiguiente() {
+		if contador == largoOriginal/2 {
+			iterador.Insertar(3)
+		}
+		contador++
+		iterador.Siguiente()
+	}
+
+	iterador = lista.Iterador()
+	var arr []int
+	for iterador.HaySiguiente() {
+		arr = append(arr, iterador.VerActual())
+		iterador.Siguiente()
+	}
+
+	require.Equal(t, []int{1, 2, 3, 4, 5}, arr)
+}
+
+func TestBorrarAlCrearIteradorExterno(t *testing.T) {
+	lista := TDALIsta.CrearListaEnlazada[int]()
+	lista.InsertarPrimero(1)
+	lista.InsertarUltimo(2)
+	iterador := lista.Iterador()
+	iterador.Borrar()
+	require.Equal(t, 2, lista.VerPrimero())
+}
+func TestBorrarUltimoCambiaUltimoIteradorExterno(t *testing.T) {
+	lista := TDALIsta.CrearListaEnlazada[int]()
+	iterador := lista.Iterador()
+	lista.InsertarPrimero(1)
+	lista.InsertarUltimo(2)
+	lista.InsertarUltimo(3)
+	for iterador.HaySiguiente() {
+		if iterador.VerActual() == lista.VerUltimo() {
+			iterador.Borrar()
+		}
+		iterador.Siguiente()
+	}
+	require.Equal(t, 2, lista.VerUltimo())
+}
+func TestRemoverMedioIteradorExterno(t *testing.T) {
+	lista := TDALIsta.CrearListaEnlazada[int]()
+	lista.InsertarPrimero(1)
+	lista.InsertarUltimo(2)
+	lista.InsertarUltimo(3)
+	lista.InsertarUltimo(4)
+	lista.InsertarUltimo(5)
+
+	iterador := lista.Iterador()
+	contador := 0
+	largoOriginal := lista.Largo()
+
+	for iterador.HaySiguiente() {
+		if contador == largoOriginal/2 {
+			iterador.Borrar()
+		}
+		contador++
+		iterador.Siguiente()
+	}
+
+	iterador = lista.Iterador()
+	var arr []int
+	for iterador.HaySiguiente() {
+		arr = append(arr, iterador.VerActual())
+		iterador.Siguiente()
+	}
+
+	require.Equal(t, []int{1, 2, 4, 5}, arr)
+}

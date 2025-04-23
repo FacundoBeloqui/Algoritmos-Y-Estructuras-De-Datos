@@ -7,6 +7,90 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+func TestListaVacia(t *testing.T){
+	lista := TDALIsta.CrearListaEnlazada[int]()
+	require.True(t, lista.EstaVacia())
+	require.Equal(t, 0, lista.Largo())
+	require.PanicsWithValue(t, "La lista esta vacia", func() { lista.BorrarPrimero() })
+	require.PanicsWithValue(t, "La lista esta vacia", func() { lista.VerPrimero() })
+	require.PanicsWithValue(t, "La lista esta vacia", func() { lista.VerUltimo() })
+}
+
+func TestInsertarYBorrar(t *testing.T){
+	lista := TDALIsta.CrearListaEnlazada[int]()
+	lista.InsertarPrimero(1)
+	lista.InsertarUltimo(2)
+	lista.InsertarPrimero(8)
+	lista.InsertarUltimo(9)
+
+	require.Equal(t, 8, lista.VerPrimero())
+	require.Equal(t, 9, lista.VerUltimo())
+	require.Equal(t, 8, lista.BorrarPrimero())
+	require.Equal(t, 1, lista.VerPrimero())
+	lista.BorrarPrimero()
+	lista.BorrarPrimero()
+	require.Equal(t, 1, lista.Largo())
+	require.False(t, lista.EstaVacia())
+	require.Equal(t, 9, lista.VerPrimero())
+	require.Equal(t, 9, lista.VerUltimo())
+	require.Equal(t, 9, lista.BorrarPrimero())
+	require.True(t, lista.EstaVacia())
+	require.Equal(t, 0, lista.Largo())
+}
+
+func TestVolumen(t *testing.T){
+	lista := TDALIsta.CrearListaEnlazada[int]()
+	require.True(t, lista.EstaVacia())
+	n :=1000000
+
+	for i := 1; i <= n; i++{
+		lista.InsertarUltimo(i)
+	}
+	require.Equal(t, n, lista.Largo())
+	for i := 1; i <= n; i++{
+		require.Equal(t, i, lista.VerPrimero())
+		lista.BorrarPrimero()
+	}
+
+	require.True(t, lista.EstaVacia())
+	require.PanicsWithValue(t, "La lista esta vacia", func() { lista.BorrarPrimero() })
+	require.PanicsWithValue(t, "La lista esta vacia", func() { lista.VerPrimero() })
+	require.PanicsWithValue(t, "La lista esta vacia", func() { lista.VerUltimo() })
+}
+
+func TestDiferentesTipos(t *testing.T){
+	listaCadenas := TDALIsta.CrearListaEnlazada[string]()
+	listaCadenas.InsertarPrimero("hola")
+	listaCadenas.InsertarUltimo("como")
+	listaCadenas.InsertarUltimo("estas")
+	require.False(t, listaCadenas.EstaVacia())
+	require.Equal(t, "hola", listaCadenas.BorrarPrimero())
+	require.Equal(t, "estas", listaCadenas.VerUltimo())
+	require.Equal(t, "como", listaCadenas.BorrarPrimero())
+	require.Equal(t, "estas", listaCadenas.VerPrimero())
+	require.Equal(t, "estas", listaCadenas.VerUltimo())
+	listaCadenas.BorrarPrimero()
+	require.True(t, listaCadenas.EstaVacia())
+	require.PanicsWithValue(t, "La lista esta vacia", func() { listaCadenas.BorrarPrimero() })
+	require.PanicsWithValue(t, "La lista esta vacia", func() { listaCadenas.VerPrimero() })
+	require.PanicsWithValue(t, "La lista esta vacia", func() { listaCadenas.VerUltimo() })
+
+	listaFloats := TDALIsta.CrearListaEnlazada[string]()
+	listaFloats.InsertarPrimero("6.8")
+	listaFloats.InsertarUltimo("5.05")
+	listaFloats.InsertarUltimo("0.97")
+	require.False(t, listaFloats.EstaVacia())
+	require.Equal(t, "6.8", listaFloats.BorrarPrimero())
+	require.Equal(t, "0.97", listaFloats.VerUltimo())
+	require.Equal(t, "5.05", listaFloats.BorrarPrimero())
+	require.Equal(t, "0.97", listaFloats.VerPrimero())
+	require.Equal(t, "0.97", listaFloats.VerUltimo())
+	listaFloats.BorrarPrimero()
+	require.True(t, listaFloats.EstaVacia())
+	require.PanicsWithValue(t, "La lista esta vacia", func() { listaFloats.BorrarPrimero() })
+	require.PanicsWithValue(t, "La lista esta vacia", func() { listaFloats.VerPrimero() })
+	require.PanicsWithValue(t, "La lista esta vacia", func() { listaFloats.VerUltimo() })
+}
 func TestIteradorInternoSuma(t *testing.T) {
 	lista := TDALIsta.CrearListaEnlazada[int]()
 	lista.InsertarPrimero(2)

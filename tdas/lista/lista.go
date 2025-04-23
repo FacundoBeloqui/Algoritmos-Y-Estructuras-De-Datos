@@ -1,7 +1,7 @@
 package lista
 
 type Lista[T any] interface {
-	//EstaVacia devuelve true si la lista esta vacia y false en caso contrario
+	//EstaVacia devuelve true si la lista no tiene elementos y false en caso contrario
 	EstaVacia() bool
 
 	//InsertarPrimero inserta un elemento al principio de la lista.
@@ -10,7 +10,7 @@ type Lista[T any] interface {
 	//InsertarUltimo insertar un elemento al final de la lista.
 	InsertarUltimo(T)
 
-	//BorrarPrimero borra el primer elemento de la lista. SI esta vacia
+	//BorrarPrimero elimina el primer elemento de la lista y lo devuelve . Si esta vacia
 	// entra en panico con un mensaje "La lista esta vacia".
 	BorrarPrimero() T
 
@@ -44,6 +44,6 @@ type IteradorLista[T any] interface {
 	//Insertar inserta un elemento a la izquierda del elemento de la posicion actual del Iterador.
 	Insertar(T)
 
-	//Borrar borra el elemento de la posicion actual del Iterador.
+	//Borrar elimina el elemento de la posicion actual del Iterador.
 	Borrar() T
 }

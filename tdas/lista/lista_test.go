@@ -151,15 +151,18 @@ func TestBorrarAlCrearIteradorExterno(t *testing.T) {
 }
 func TestBorrarUltimoCambiaUltimoIteradorExterno(t *testing.T) {
 	lista := TDALIsta.CrearListaEnlazada[int]()
-	iterador := lista.Iterador()
 	lista.InsertarPrimero(1)
 	lista.InsertarUltimo(2)
 	lista.InsertarUltimo(3)
+	iterador := lista.Iterador()
 	for iterador.HaySiguiente() {
 		if iterador.VerActual() == lista.VerUltimo() {
 			iterador.Borrar()
-		}
-		iterador.Siguiente()
+		} else {
+			iterador.Siguiente()
+		} 
+		
+		
 	}
 	require.Equal(t, 2, lista.VerUltimo())
 }

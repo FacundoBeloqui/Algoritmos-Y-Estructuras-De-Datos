@@ -11,14 +11,10 @@ import (
 
 func main() {
 	s := bufio.NewScanner(os.Stdin)
-	var lineas []string
 	for s.Scan() {
-		lineas = append(lineas, s.Text())
-	}
-
-	for _, linea := range lineas {
+		linea := s.Text()
 		c := cola.CrearColaEnlazada[string]()
-		p := pila.CrearPilaDinamica[calculadoraPolaca.Caracter]()
+		p := pila.CrearPilaDinamica[calculadoraPolaca.Operacion]()
 		tokens := calculadoraPolaca.SepararCadena(linea)
 		for _, token := range tokens {
 			calculadoraPolaca.ManejarToken(c, p, token)

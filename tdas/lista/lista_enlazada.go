@@ -129,7 +129,7 @@ func (i *iterListaEnlazada[T]) Insertar(elemento T) {
 	nuevoNodo := crearNuevoNodo(elemento)
 	nuevoNodo.siguiente = i.actual
 
-	if i.anterior == nil || i.actual == i.lista.primero {
+	if i.anterior == nil {
 		i.lista.primero = nuevoNodo
 	} else {
 		i.anterior.siguiente = nuevoNodo

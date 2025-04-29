@@ -7,7 +7,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestListaVacia(t *testing.T){
+func TestListaVacia(t *testing.T) {
 	lista := TDALIsta.CrearListaEnlazada[int]()
 	require.True(t, lista.EstaVacia())
 	require.Equal(t, 0, lista.Largo())
@@ -16,7 +16,7 @@ func TestListaVacia(t *testing.T){
 	require.PanicsWithValue(t, "La lista esta vacia", func() { lista.VerUltimo() })
 }
 
-func TestInsertarYBorrar(t *testing.T){
+func TestInsertarYBorrar(t *testing.T) {
 	lista := TDALIsta.CrearListaEnlazada[int]()
 	lista.InsertarPrimero(1)
 	lista.InsertarUltimo(2)
@@ -38,16 +38,16 @@ func TestInsertarYBorrar(t *testing.T){
 	require.Equal(t, 0, lista.Largo())
 }
 
-func TestVolumen(t *testing.T){
+func TestVolumen(t *testing.T) {
 	lista := TDALIsta.CrearListaEnlazada[int]()
 	require.True(t, lista.EstaVacia())
-	n :=1000000
+	n := 1000000
 
-	for i := 1; i <= n; i++{
+	for i := 1; i <= n; i++ {
 		lista.InsertarUltimo(i)
 	}
 	require.Equal(t, n, lista.Largo())
-	for i := 1; i <= n; i++{
+	for i := 1; i <= n; i++ {
 		require.Equal(t, i, lista.VerPrimero())
 		lista.BorrarPrimero()
 	}
@@ -58,7 +58,7 @@ func TestVolumen(t *testing.T){
 	require.PanicsWithValue(t, "La lista esta vacia", func() { lista.VerUltimo() })
 }
 
-func TestDiferentesTipos(t *testing.T){
+func TestDiferentesTipos(t *testing.T) {
 	listaCadenas := TDALIsta.CrearListaEnlazada[string]()
 	listaCadenas.InsertarPrimero("hola")
 	listaCadenas.InsertarUltimo("como")
@@ -244,9 +244,8 @@ func TestBorrarUltimoCambiaUltimoIteradorExterno(t *testing.T) {
 			iterador.Borrar()
 		} else {
 			iterador.Siguiente()
-		} 
-		
-		
+		}
+
 	}
 	require.Equal(t, 2, lista.VerUltimo())
 }

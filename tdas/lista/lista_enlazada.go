@@ -104,14 +104,14 @@ func (l *listaEnlazada[T]) Iterador() IteradorLista[T] {
 	}
 }
 
-func VerIteradorEsNil[T any](i *iterListaEnlazada[T]) {
+func verIteradorEsNil[T any](i *iterListaEnlazada[T]) {
 	if !i.HaySiguiente() {
-		panic("El iterador ya termino de recorrer")
+		panic("El iterador termino de iterar")
 	}
 }
 
 func (i *iterListaEnlazada[T]) VerActual() T {
-	VerIteradorEsNil(i)
+	verIteradorEsNil(i)
 	return i.actual.dato //
 
 }
@@ -119,7 +119,7 @@ func (i *iterListaEnlazada[T]) HaySiguiente() bool {
 	return i.actual != nil
 }
 func (i *iterListaEnlazada[T]) Siguiente() {
-	VerIteradorEsNil(i)
+	verIteradorEsNil(i)
 	i.anterior = i.actual
 	i.actual = i.actual.siguiente
 
@@ -144,7 +144,7 @@ func (i *iterListaEnlazada[T]) Insertar(elemento T) {
 }
 
 func (i *iterListaEnlazada[T]) Borrar() T {
-	VerIteradorEsNil(i)
+	verIteradorEsNil(i)
 	dato := i.actual.dato
 
 	if i.anterior != nil {

@@ -114,29 +114,13 @@ func (h *hashAbierto[K, V]) Iterar(f func(clave K, dato V) bool) {
 	panic("implement me")
 }
 
-func (h *hashAbierto[K, V]) Iterador() IterDiccionario[K, V] {
-	//TODO implement me
-	panic("implement me")
+func (i *iterDiccionario[K, V]) Siguiente() {
+	if !i.HaySiguiente() {
+		panic("El iterador termino de iterar")
+	}
+	if i.iteradorLista.HaySiguiente() {
+		i.iteradorLista.Siguiente()
+	} else {
+		i.posicion++
+	}
 }
-
-//primitivas del iterador
-// hay que hacer el struct del iterador del hash
-
-/*
-type iteradorHash[k comparable, V any] struct{
-	hash *hashAbierto[K,V]
-	por ahora no se que mas ups
-}
-
-func (i *) HaySiguiente() bool {
-
-}
-
-func (i *) VerActual() (K, V) {
-
-}
-
-func (i *) Siguiente() {
-
-}
-*/

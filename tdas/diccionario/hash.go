@@ -65,39 +65,69 @@ func (h *hashAbierto[K, V]) Guardar(clave K, dato V) {
 
 }
 
-func (h hashAbierto[K, V]) Pertenece(clave K) bool {
+func (h *hashAbierto[K, V]) Pertenece(clave K) bool {
+	celda := Hash(clave) % TAMAÑO
+	iterador := h.tabla[celda].Iterador()
+	for iterador.HaySiguiente() {
+		if iterador.VerActual().clave == clave {
+			return true
+		}
+		iterador.Siguiente()
+	}
+	return false
+}
+
+func (h *hashAbierto[K, V]) Obtener(clave K) V {
+	celda := Hash(clave) % TAMAÑO
+	iterador := h.tabla[celda].Iterador()
+	for iterador.HaySiguiente() {
+		if iterador.VerActual().clave == clave {
+			return iterador.VerActual().dato
+		}
+		iterador.Siguiente()
+	}
+	panic("La clave no pertenece al diccionario")
+}
+
+func (h *hashAbierto[K, V]) Borrar(clave K) V {
+	celda := Hash(clave) % TAMAÑO
+	iterador := h.tabla[celda].Iterador()
+	for iterador.HaySiguiente() {
+		if iterador.VerActual().clave == clave {
+			dato := iterador.VerActual().dato
+			iterador.Borrar()
+			h.cantidad--
+			return dato
+		}
+		iterador.Siguiente()
+	}
+
+	panic("La clave no pertenece al diccionario")
+}
+
+func (h *hashAbierto[K, V]) Cantidad() int {
+	return h.cantidad
+}
+
+func (h *hashAbierto[K, V]) Iterar(f func(clave K, dato V) bool) {
 	//TODO implement me
 	panic("implement me")
 }
 
-func (h hashAbierto[K, V]) Obtener(clave K) V {
-	//TODO implement me
-	panic("implement me")
-}
-
-func (h hashAbierto[K, V]) Borrar(clave K) V {
-	//TODO implement me
-	panic("implement me")
-}
-
-func (h hashAbierto[K, V]) Cantidad() int {
-	//TODO implement me
-	panic("implement me")
-}
-
-func (h hashAbierto[K, V]) Iterar(f func(clave K, dato V) bool) {
-	//TODO implement me
-	panic("implement me")
-}
-
-func (h hashAbierto[K, V]) Iterador() IterDiccionario[K, V] {
+func (h *hashAbierto[K, V]) Iterador() IterDiccionario[K, V] {
 	//TODO implement me
 	panic("implement me")
 }
 
 //primitivas del iterador
 // hay que hacer el struct del iterador del hash
+
 /*
+type iteradorHash[k comparable, V any] struct{
+	hash *hashAbierto[K,V]
+	por ahora no se que mas ups
+}
+
 func (i *) HaySiguiente() bool {
 
 }

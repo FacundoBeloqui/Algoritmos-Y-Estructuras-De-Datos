@@ -110,8 +110,57 @@ func (h *hashAbierto[K, V]) Cantidad() int {
 }
 
 func (h *hashAbierto[K, V]) Iterar(f func(clave K, dato V) bool) {
-	//TODO implement me
-	panic("implement me")
+	for _, lista := range h.tabla {
+		if lista != nil {
+			iterador := lista.Iterador()
+			for iterador.HaySiguiente() {
+				if !f(iterador.VerActual().clave, iterador.VerActual().dato) {
+					break
+				}
+				iterador.Siguiente()
+			}
+		}
+	}
+}
+
+type iterDiccionario[K comparable, V any] struct {
+	hash          *hashAbierto[K, V]
+	iteradorLista TDALista.IteradorLista[ParClaveValor[K, V]]
+	posicion      int
+}
+
+func (h *hashAbierto[K, V]) Iterador() IterDiccionario[K, V] {
+	iter := &iterDiccionario[K, V]{
+		h,
+		nil,
+		0,
+	}
+
+	for iter.posicion < TAMAÑO {
+		lista := iter.hash.tabla[iter.posicion]
+		if lista.EstaVacia() {
+			iter.posicion++
+		}
+	}
+	return iter
+}
+
+func (i *iterDiccionario[K, V]) HaySiguiente() bool {
+	for i.posicion < TAMAÑO {
+		lista := i.hash.tabla[i.posicion]
+		if !lista.EstaVacia() && lista.Iterador().HaySiguiente() {
+			return true
+		}
+		i.posicion++
+	}
+	return false
+}
+
+func (i *iterDiccionario[K, V]) VerActual() (K, V) {
+	if !i.HaySiguiente() {
+		panic("El iterador termino de iterar")
+	}
+	return i.iteradorLista.VerActual().clave, i.iteradorLista.VerActual().dato
 }
 
 func (i *iterDiccionario[K, V]) Siguiente() {

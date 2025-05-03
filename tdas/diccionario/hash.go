@@ -62,6 +62,22 @@ func (h *hashAbierto[K, V]) Guardar(clave K, dato V) {
 		h.tabla[celda].InsertarUltimo(ParClaveValor[K, V]{clave, dato})
 		h.cantidad++
 	}
+	/*
+		celda := Hash(clave) % TAMAÑO
+		iterador := h.tabla[celda].Iterador()
+		for iterador.HaySiguiente() {
+			if iterador.VerActual().clave == clave {
+				iterador.Borrar()
+				h.cantidad--
+				break
+			}
+			iterador.Siguiente()
+		}
+		h.tabla[celda].InsertarUltimo(ParClaveValor[K, V]{clave, dato})
+		h.cantidad++
+		}
+
+	*/
 }
 
 func (h *hashAbierto[K, V]) Pertenece(clave K) bool {
@@ -137,9 +153,11 @@ func (h *hashAbierto[K, V]) Iterador() IterDiccionario[K, V] {
 
 	for iter.posicion < TAMAÑO {
 		lista := iter.hash.tabla[iter.posicion]
-		if lista.EstaVacia() {
-			iter.posicion++
+		if !lista.EstaVacia() {
+			iter.iteradorLista = lista.Iterador()
+			break
 		}
+		iter.posicion++
 	}
 	return iter
 }

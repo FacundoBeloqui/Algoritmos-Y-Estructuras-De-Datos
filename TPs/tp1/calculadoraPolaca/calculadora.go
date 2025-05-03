@@ -6,6 +6,11 @@ import (
 	"tdas/pila"
 )
 
+const PRIORIDAD_OPERANDO = 0
+const PRIORIDAD_SUMA_RESTA = 2
+const PRIORIDAD_DIVISION_MULTIPLICACION = 3
+const PRIORIDAD_POTENCIA = 4
+
 type Asociatividad struct {
 	izquierda bool
 }
@@ -28,13 +33,13 @@ func (o OperacionImpl) Asociatividad() Asociatividad {
 }
 
 var Operaciones = []Operacion{
-	OperacionImpl{simbolo: "+", prioridad: 2, asoc: Asociatividad{izquierda: true}},
-	OperacionImpl{simbolo: "-", prioridad: 2, asoc: Asociatividad{izquierda: true}},
-	OperacionImpl{simbolo: "/", prioridad: 3, asoc: Asociatividad{izquierda: true}},
-	OperacionImpl{simbolo: "*", prioridad: 3, asoc: Asociatividad{izquierda: true}},
-	OperacionImpl{simbolo: "^", prioridad: 4, asoc: Asociatividad{izquierda: false}},
-	OperacionImpl{simbolo: "(", prioridad: 0, asoc: Asociatividad{izquierda: true}},
-	OperacionImpl{simbolo: ")", prioridad: 0, asoc: Asociatividad{izquierda: true}},
+	OperacionImpl{simbolo: "+", prioridad: PRIORIDAD_SUMA_RESTA, asoc: Asociatividad{izquierda: true}},
+	OperacionImpl{simbolo: "-", prioridad: PRIORIDAD_SUMA_RESTA, asoc: Asociatividad{izquierda: true}},
+	OperacionImpl{simbolo: "/", prioridad: PRIORIDAD_DIVISION_MULTIPLICACION, asoc: Asociatividad{izquierda: true}},
+	OperacionImpl{simbolo: "*", prioridad: PRIORIDAD_DIVISION_MULTIPLICACION, asoc: Asociatividad{izquierda: true}},
+	OperacionImpl{simbolo: "^", prioridad: PRIORIDAD_POTENCIA, asoc: Asociatividad{izquierda: false}},
+	OperacionImpl{simbolo: "(", prioridad: PRIORIDAD_OPERANDO, asoc: Asociatividad{izquierda: true}},
+	OperacionImpl{simbolo: ")", prioridad: PRIORIDAD_OPERANDO, asoc: Asociatividad{izquierda: true}},
 }
 
 func SepararCadena(cadena string) []string {
@@ -46,7 +51,7 @@ func SepararCadena(cadena string) []string {
 }
 
 func EsOperador(o Operacion) bool {
-	return o.Prioridad() != 0
+	return o.Prioridad() != PRIORIDAD_OPERANDO
 }
 func VerOperacion(cadena string) Operacion {
 	for _, operador := range Operaciones {
@@ -54,7 +59,7 @@ func VerOperacion(cadena string) Operacion {
 			return operador
 		}
 	}
-	return OperacionImpl{cadena, 0, Asociatividad{true}}
+	return OperacionImpl{cadena, PRIORIDAD_OPERANDO, Asociatividad{true}}
 }
 
 func manejarOperador(cola cola.Cola[string], pila pila.Pila[Operacion], operador Operacion) {

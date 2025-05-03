@@ -47,6 +47,6 @@ type IteradorLista[T any] interface {
 	Insertar(T)
 
 	//Borrar elimina el elemento de la posicion actual del Iterador.
-	// Si ya termino de iterar entra en panico con un mensaje "El iterador termino de iterar".
+	//Si ya termino de iterar entra en panico con un mensaje "El iterador termino de iterar".
 	Borrar() T
 }

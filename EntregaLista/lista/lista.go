@@ -25,8 +25,7 @@ type Lista[T any] interface {
 	//Largo devuelve el largo de la lista.
 	Largo() int
 
-	//Iterar llama al iterador interno de la lista. El cual permite recorrer la estructura sin que el ususario escriba explicitamente el bucle
-	//que recorre los elementos, sino que le pasa una función que se aplicará a cada uno.
+	//Iterar llama al iterador interno de la lista.
 	Iterar(visitar func(T) bool)
 
 	//Iterador crea el iterador externo de la lista. El cual permite recorrer la estructura paso a paso dandole el control al usuario.

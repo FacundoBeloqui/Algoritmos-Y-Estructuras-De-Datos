@@ -83,35 +83,32 @@ func (h *hashAbierto[K, V]) Pertenece(clave K) bool {
 }
 
 func (h *hashAbierto[K, V]) Obtener(clave K) V {
-	celda := Hash(clave) % uint32(h.tam)
-	iterador := h.tabla[celda].Iterador()
-	for iterador.HaySiguiente() {
-		if iterador.VerActual().clave == clave {
-			return iterador.VerActual().dato
-		}
-		iterador.Siguiente()
-	}
-	panic("La clave no pertenece al diccionario")
+	iterador := h.encontrarIterador(clave)
+	return iterador.VerActual().dato
 }
 
 func (h *hashAbierto[K, V]) Borrar(clave K) V {
-	celda := Hash(clave) % uint32(h.tam)
-	iterador := h.tabla[celda].Iterador()
-	for iterador.HaySiguiente() {
-		if iterador.VerActual().clave == clave {
-			dato := iterador.VerActual().dato
-			iterador.Borrar()
-			h.cantidad--
-			return dato
-		}
-		iterador.Siguiente()
-	}
-
-	panic("La clave no pertenece al diccionario")
+	iterador := h.encontrarIterador(clave)
+	dato := iterador.VerActual().dato
+	iterador.Borrar()
+	h.cantidad--
+	return dato
 }
 
 func (h *hashAbierto[K, V]) Cantidad() int {
 	return h.cantidad
+}
+
+func (h *hashAbierto[K, V]) encontrarIterador(clave K) TDALista.IteradorLista[ParClaveValor[K, V]] {
+	celda := Hash(clave) % uint32(h.tam)
+	iterador := h.tabla[celda].Iterador()
+	for iterador.HaySiguiente() {
+		if iterador.VerActual().clave == clave {
+			return iterador
+		}
+		iterador.Siguiente()
+	}
+	panic("La clave no pertenece al diccionario")
 }
 
 func (h *hashAbierto[K, V]) Iterar(f func(clave K, dato V) bool) {

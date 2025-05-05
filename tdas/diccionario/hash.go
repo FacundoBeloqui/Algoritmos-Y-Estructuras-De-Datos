@@ -45,71 +45,65 @@ func Hash[K comparable](clave K) uint32 {
 	return h.Sum32()
 }
 
-func (h *hashAbierto[K, V]) Guardar(clave K, dato V) {	
-	if float32(h.cantidad)/float32(h.tam) > FACTOR_CARGA_MAX{
-		h.redimensionar(h.tam * FACTOR_REDIMENSION)
+func (hash *hashAbierto[K, V]) Guardar(clave K, dato V) {	
+	if float32(hash.cantidad)/float32(hash.tam) > FACTOR_CARGA_MAX{
+		hash.redimensionar(hash.tam * FACTOR_REDIMENSION)
 	}
-	iterador, encontrado := h.encontrarCampo(clave) 
-	if encontrado{
+	iterador := hash.encontrarCampo(clave) 
+	if iterador != nil{
 		iterador.Borrar()
 		iterador.Insertar(ParClaveValor[K, V]{clave, dato})
-	} else {
-		celda := Hash(clave) % uint32(h.tam)
-		h.tabla[celda].InsertarUltimo(ParClaveValor[K, V]{clave, dato})
-		h.cantidad++
+		return
 	}
+	celda := Hash(clave) % uint32(hash.tam)
+	hash.tabla[celda].InsertarUltimo(ParClaveValor[K, V]{clave, dato})
+	hash.cantidad++
 }
 
-func (h *hashAbierto[K, V]) Pertenece(clave K) bool {
-	_, encontrado := h.encontrarCampo(clave)
-	return encontrado
+func (hash *hashAbierto[K, V]) Pertenece(clave K) bool {
+	return hash.encontrarCampo(clave) != nil
 }
 
-func (h *hashAbierto[K, V]) Obtener(clave K) V {
-	iterador, encontrado := h.encontrarCampo(clave)
-	if !encontrado{
-		panic("La clave no pertenece al diccionario")
-	}
+func (hash *hashAbierto[K, V]) Obtener(clave K) V {
+	iterador := hash.encontrarCampo(clave)
+	hash.verificarIterador(iterador)
 	return iterador.VerActual().dato
 }
 
-func (h *hashAbierto[K, V]) Borrar(clave K) V {
-	iterador, encontrado := h.encontrarCampo(clave)
-	if !encontrado{
-		panic("La clave no pertenece al diccionario")
+func (hash *hashAbierto[K, V]) Borrar(clave K) V {
+	iterador := hash.encontrarCampo(clave)
+	hash.verificarIterador(iterador)
+	campo := iterador.Borrar()
+	hash.cantidad--
+	if hash.tam > TAMAÑO_INICIAL && float32(hash.cantidad)/float32(hash.tam) < FACTOR_CARGA_MIN{
+		hash.redimensionar(hash.tam / FACTOR_REDIMENSION)
 	}
-	dato := iterador.VerActual().dato
-	iterador.Borrar()
-	h.cantidad--
-	if h.tam > TAMAÑO_INICIAL && float32(h.cantidad)/float32(h.tam) < FACTOR_CARGA_MIN{
-		h.redimensionar(h.tam / FACTOR_REDIMENSION)
-	}
-	return dato
+	return campo.dato
 }
 
-func (h *hashAbierto[K, V]) Cantidad() int {
-	return h.cantidad
+func (hash *hashAbierto[K, V]) Cantidad() int {
+	return hash.cantidad
 }
 
 
-func (h *hashAbierto[K, V]) encontrarCampo(clave K) (TDALista.IteradorLista[ParClaveValor[K, V]], bool){
-	celda := Hash(clave) % uint32(h.tam)
-	iterador := h.tabla[celda].Iterador()
+func (hash *hashAbierto[K, V]) encontrarCampo(clave K) TDALista.IteradorLista[ParClaveValor[K, V]]{
+	celda := Hash(clave) % uint32(hash.tam)
+	iterador := hash.tabla[celda].Iterador()
 	for iterador.HaySiguiente(){
 		if iterador.VerActual().clave == clave {
-			return iterador, true
+			return iterador
 		}
 		iterador.Siguiente()
 	}
-	return nil, false
+	return nil 
 }
 
-func (h *hashAbierto[K, V]) redimensionar(nuevoTam int){
+func (hash *hashAbierto[K, V]) redimensionar(nuevoTam int){
 	nuevaTabla := make([]TDALista.Lista[ParClaveValor[K, V]], nuevoTam)
 	for i := range nuevaTabla{
 		nuevaTabla[i] = TDALista.CrearListaEnlazada[ParClaveValor[K, V]]()
 	}
-	for _, lista := range h.tabla{
+	for _, lista := range hash.tabla{
 		iterador := lista.Iterador()
 		for iterador.HaySiguiente(){
 			nuevaCelda := Hash(iterador.VerActual().clave) % uint32(nuevoTam)
@@ -117,20 +111,24 @@ func (h *hashAbierto[K, V]) redimensionar(nuevoTam int){
 			iterador.Siguiente()
 		}
 	}
-	h.tabla = nuevaTabla
-	h.tam = nuevoTam
+	hash.tabla = nuevaTabla
+	hash.tam = nuevoTam
 }
 
-func (h *hashAbierto[K, V]) Iterar(f func(clave K, dato V) bool) {
-	for _, lista := range h.tabla {
-		if lista != nil {
-			iterador := lista.Iterador()
-			for iterador.HaySiguiente() {
-				if !f(iterador.VerActual().clave, iterador.VerActual().dato) {
-					return
-				}
-				iterador.Siguiente()
+func (hash *hashAbierto[K, V]) verificarIterador(iterador TDALista.IteradorLista[ParClaveValor[K, V]]) {
+    if iterador == nil {
+        panic("La clave no pertenece al diccionario")
+    }
+}
+
+func (hash *hashAbierto[K, V]) Iterar(f func(clave K, dato V) bool) {
+	for _, lista := range hash.tabla {
+		iterador := lista.Iterador()
+		for iterador.HaySiguiente() {
+			if !f(iterador.VerActual().clave, iterador.VerActual().dato) {
+				return
 			}
+			iterador.Siguiente()
 		}
 	}
 }
@@ -141,52 +139,56 @@ type iterDiccionario[K comparable, V any] struct {
 	posicion      int
 }
 
-func (h *hashAbierto[K, V]) Iterador() IterDiccionario[K, V] {
+func (hash *hashAbierto[K, V]) Iterador() IterDiccionario[K, V] {
 	iter := &iterDiccionario[K, V]{
-		h,
+		hash,
 		nil,
-		0,
+		-1,
 	}
-
-	iter.encontrarLista()
+	posInicial := iter.encontrarLista(0)
+	if posInicial != -1{
+		iter.posicion = posInicial
+	} else{
+		iter.posicion = 0
+	}
+	iter.iteradorLista = iter.hash.tabla[iter.posicion].Iterador()
 	return iter
 }
 
-func (i *iterDiccionario[K, V]) HaySiguiente() bool {
-	return i.iteradorLista != nil
+func (iter *iterDiccionario[K, V]) HaySiguiente() bool {
+	return iter.iteradorLista.HaySiguiente()
 }
 
 
-func (i *iterDiccionario[K, V]) VerActual() (K, V) {
-	i.verificarIterador()
-	return i.iteradorLista.VerActual().clave, i.iteradorLista.VerActual().dato
+func (iter *iterDiccionario[K, V]) VerActual() (K, V) {
+	iter.verificarIterador()
+	return iter.iteradorLista.VerActual().clave, iter.iteradorLista.VerActual().dato
 }
 
-func (i *iterDiccionario[K, V]) Siguiente() {
-	i.verificarIterador()
-	if i.iteradorLista.HaySiguiente() {
-		i.iteradorLista.Siguiente()
-	} else {
-		i.posicion++
-		i.encontrarLista()
-	}
-}
-
-func (i *iterDiccionario[K, V]) encontrarLista(){
-	for i.posicion < i.hash.tam{
-		lista := i.hash.tabla[i.posicion]
-		if !lista.EstaVacia() {
-			i.iteradorLista = lista.Iterador()
-			i.iteradorLista.Siguiente()
+func (iter *iterDiccionario[K, V]) Siguiente() {
+	iter.verificarIterador()
+	iter.iteradorLista.Siguiente()
+	if !iter.iteradorLista.HaySiguiente() {
+		nuevaPos := iter.encontrarLista(iter.posicion + 1)
+		if nuevaPos == -1{
 			return
 		}
-		i.posicion++
+		iter.posicion = nuevaPos
+		iter.iteradorLista = iter.hash.tabla[iter.posicion].Iterador()
 	}
-	i.iteradorLista = nil
 }
 
-func (i *iterDiccionario[K, V]) verificarIterador(){
-	if i.iteradorLista == nil {
+func (iter *iterDiccionario[K, V]) encontrarLista(desde int) int{
+	for i := desde; i < iter.hash.tam; i++{
+		if !iter.hash.tabla[i].EstaVacia(){
+			return i
+		}
+	}
+	return -1
+}
+
+func (iter *iterDiccionario[K, V]) verificarIterador(){
+	if !iter.HaySiguiente() {
 		panic("El iterador termino de iterar")
 	}
 }

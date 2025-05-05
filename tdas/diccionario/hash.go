@@ -58,7 +58,7 @@ func (h *hashAbierto[K, V]) Guardar(clave K, dato V) {
 		h.tabla[celda].InsertarUltimo(ParClaveValor[K, V]{clave, dato})
 		h.cantidad++
 	}
-	}
+}
 
 func (h *hashAbierto[K, V]) Pertenece(clave K) bool {
 	_, encontrado := h.encontrarCampo(clave)

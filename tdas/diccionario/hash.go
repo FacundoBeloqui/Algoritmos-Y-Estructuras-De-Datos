@@ -52,11 +52,12 @@ func (h *hashAbierto[K, V]) Guardar(clave K, dato V) {
 	iterador, encontrado := h.encontrarCampo(clave) 
 	if encontrado{
 		iterador.Borrar()
-		h.cantidad--
+		iterador.Insertar(ParClaveValor[K, V]{clave, dato})
+	} else {
+		celda := Hash(clave) % uint32(h.tam)
+		h.tabla[celda].InsertarUltimo(ParClaveValor[K, V]{clave, dato})
+		h.cantidad++
 	}
-	celda := Hash(clave) % uint32(h.tam)
-	h.tabla[celda].InsertarUltimo(ParClaveValor[K, V]{clave, dato})
-	h.cantidad++
 	}
 
 func (h *hashAbierto[K, V]) Pertenece(clave K) bool {

@@ -14,6 +14,9 @@ func TestListaVacia(t *testing.T) {
 	require.PanicsWithValue(t, "La lista esta vacia", func() { lista.BorrarPrimero() })
 	require.PanicsWithValue(t, "La lista esta vacia", func() { lista.VerPrimero() })
 	require.PanicsWithValue(t, "La lista esta vacia", func() { lista.VerUltimo() })
+}
+func TestListaVaciadaSeComportaComoRecienCreada(t *testing.T) {
+	lista := TDALIsta.CrearListaEnlazada[int]()
 	lista.InsertarPrimero(1)
 	lista.BorrarPrimero()
 	require.True(t, lista.EstaVacia())
@@ -21,7 +24,6 @@ func TestListaVacia(t *testing.T) {
 	require.PanicsWithValue(t, "La lista esta vacia", func() { lista.VerPrimero() })
 	require.PanicsWithValue(t, "La lista esta vacia", func() { lista.VerUltimo() })
 }
-
 func TestInsertarYBorrar(t *testing.T) {
 	lista := TDALIsta.CrearListaEnlazada[int]()
 	lista.InsertarPrimero(1)

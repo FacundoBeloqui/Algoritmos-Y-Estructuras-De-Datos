@@ -102,3 +102,21 @@ func TestReemplazoDatos(t *testing.T) {
 	require.EqualValues(t, "miu", abb.Obtener("Gato"))
 	require.EqualValues(t, "baubau", abb.Obtener("Perro"))
 }
+
+func TestReemplazoDatosHopscotch(t *testing.T) {
+	t.Log("Guarda bastantes claves, y luego reemplaza sus datos. Luego valida que todos los datos sean " +
+		"correctos. Para una implementación Hopscotch, detecta errores al hacer lugar o guardar elementos.")
+
+	abb := TDADiccionario.CrearABB[int, int](cmpInt)
+	for i := 0; i < 500; i++ {
+		abb.Guardar(i, i)
+	}
+	for i := 0; i < 500; i++ {
+		abb.Guardar(i, 2*i)
+	}
+	ok := true
+	for i := 0; i < 500 && ok; i++ {
+		ok = abb.Obtener(i) == 2*i
+	}
+	require.True(t, ok, "Los elementos no fueron actualizados correctamente")
+}

@@ -23,14 +23,18 @@ func CrearABB[K comparable, V any](funcion_cmp func(K, K) int) DiccionarioOrdena
 	}
 }
 
+func crearNodo[K comparable, V any] (clave K, dato V) *nodoAbb[K, V]{
+	return &nodoAbb[K, V]{
+		nil,
+		nil,
+		clave,
+		dato,
+	}
+}
+
 func (abb *abb[K, V]) Guardar(clave K, dato V) {
 	if abb.raiz == nil {
-		abb.raiz = &nodoAbb[K, V]{
-			nil,
-			nil,
-			clave,
-			dato,
-		}
+		abb.raiz = crearNodo(clave, dato)
 		abb.cantidad++
 	} else {
 		abb.guardarRec(abb.raiz, clave, dato)
@@ -41,7 +45,7 @@ func (abb *abb[K, V]) guardarRec(nodo *nodoAbb[K, V], clave K, dato V) *nodoAbb[
 	if nodo == nil {
 		//no estamos actualizando el nodo izquierdo o derecho del padre
 		abb.cantidad++
-		return &nodoAbb[K, V]{nil, nil, clave, dato}
+		return crearNodo(clave, dato)
 	}
 	if abb.cmp(clave, nodo.clave) < 0 {
 		nodo.izquierdo = abb.guardarRec(nodo.izquierdo, clave, dato)

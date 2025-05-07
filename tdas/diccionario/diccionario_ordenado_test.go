@@ -9,14 +9,14 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-var cmpInt = func(a, b int) int {
+/*var cmpInt = func(a, b int) int {
 	if a < b {
 		return -1
 	} else if a > b {
 		return 1
 	}
 	return 0
-}
+}*/
 
 func TestAbbVacio(t *testing.T){
 	t.Log("Comprueba que ABB vacío no tiene claves")

@@ -23,7 +23,7 @@ func CrearABB[K comparable, V any](funcion_cmp func(K, K) int) DiccionarioOrdena
 	}
 }
 
-func crearNodo[K comparable, V any] (clave K, dato V) *nodoAbb[K, V]{
+func crearNodo[K comparable, V any](clave K, dato V) *nodoAbb[K, V] {
 	return &nodoAbb[K, V]{
 		nil,
 		nil,
@@ -33,17 +33,11 @@ func crearNodo[K comparable, V any] (clave K, dato V) *nodoAbb[K, V]{
 }
 
 func (abb *abb[K, V]) Guardar(clave K, dato V) {
-	if abb.raiz == nil {
-		abb.raiz = crearNodo(clave, dato)
-		abb.cantidad++
-	} else {
-		abb.guardarRec(abb.raiz, clave, dato)
-	}
+	abb.raiz = abb.guardarRec(abb.raiz, clave, dato)
 }
 
 func (abb *abb[K, V]) guardarRec(nodo *nodoAbb[K, V], clave K, dato V) *nodoAbb[K, V] {
 	if nodo == nil {
-		//no estamos actualizando el nodo izquierdo o derecho del padre
 		abb.cantidad++
 		return crearNodo(clave, dato)
 	}
@@ -51,8 +45,10 @@ func (abb *abb[K, V]) guardarRec(nodo *nodoAbb[K, V], clave K, dato V) *nodoAbb[
 		nodo.izquierdo = abb.guardarRec(nodo.izquierdo, clave, dato)
 	} else if abb.cmp(clave, nodo.clave) > 0 {
 		nodo.derecho = abb.guardarRec(nodo.derecho, clave, dato)
+	} else {
+		nodo.dato = dato
 	}
-	return &nodoAbb[K, V]{nodo.izquierdo, nodo.derecho, clave, dato}
+	return nodo
 }
 
 func (abb *abb[K, V]) Pertenece(clave K) bool {
@@ -60,15 +56,15 @@ func (abb *abb[K, V]) Pertenece(clave K) bool {
 }
 
 func (abb *abb[K, V]) perteneceRec(nodo *nodoAbb[K, V], clave K) bool {
-	if abb.cmp(clave, nodo.clave) == 0 {
-		return true
+	if nodo == nil {
+		return false
 	}
 	if abb.cmp(clave, nodo.clave) < 0 {
 		return abb.perteneceRec(nodo.izquierdo, clave)
 	} else if abb.cmp(clave, nodo.clave) > 0 {
 		return abb.perteneceRec(nodo.derecho, clave)
 	}
-	return false //hay que arreglar algo del false
+	return true
 }
 
 func (abb *abb[K, V]) Obtener(clave K) V {
@@ -76,22 +72,40 @@ func (abb *abb[K, V]) Obtener(clave K) V {
 }
 
 func (abb *abb[K, V]) obtenerRec(nodo *nodoAbb[K, V], clave K) V {
+	if nodo == nil {
+		panic("La clave no pertenece al diccionario")
+	}
 	if abb.cmp(clave, nodo.clave) == 0 {
 		return nodo.dato
 	}
 	if abb.cmp(clave, nodo.clave) < 0 {
 		return abb.obtenerRec(nodo.izquierdo, clave)
-	} else if abb.cmp(clave, nodo.clave) > 0 {
-		return abb.obtenerRec(nodo.derecho, clave)
 	}
-	panic("La clave no pertenece al diccionario")
+	return abb.obtenerRec(nodo.derecho, clave)
 }
 
 func (abb *abb[K, V]) Borrar(clave K) V {
-	//TODO implement me
-	panic("implement me")
+	return abb.borrarRec(abb.raiz, clave)
 }
-
+func (abb *abb[K, V]) borrarRec(nodo *nodoAbb[K, V], clave K) V {
+	if nodo == nil {
+		panic("La clave no pertenece al diccionario")
+	}
+	if abb.cmp(clave, nodo.clave) < 0 {
+		return abb.borrarRec(nodo.izquierdo, clave)
+	} else if abb.cmp(clave, nodo.clave) > 0 {
+		return abb.borrarRec(nodo.derecho, clave)
+	} else {
+		if nodo.izquierdo == nil && nodo.derecho == nil {
+			nodo = nil
+		} else if nodo.izquierdo == nil && nodo.derecho != nil {
+			nodo = nodo.derecho
+		} else if nodo.izquierdo != nil && nodo.derecho == nil {
+			nodo = nodo.izquierdo
+		}
+	}
+	panic("ni idea que hacer pero va pora aca xd")
+}
 func (abb *abb[K, V]) Cantidad() int {
 	return abb.cantidad
 }

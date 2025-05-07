@@ -31,6 +31,7 @@ func (abb *abb[K, V]) Guardar(clave K, dato V) {
 			clave,
 			dato,
 		}
+		abb.cantidad++
 	} else {
 		abb.guardarRec(abb.raiz, clave, dato)
 	}
@@ -38,13 +39,14 @@ func (abb *abb[K, V]) Guardar(clave K, dato V) {
 
 func (abb *abb[K, V]) guardarRec(nodo *nodoAbb[K, V], clave K, dato V) *nodoAbb[K, V] {
 	if nodo == nil {
+		//no estamos actualizando el nodo izquierdo o derecho del padre
 		abb.cantidad++
 		return &nodoAbb[K, V]{nil, nil, clave, dato}
 	}
 	if abb.cmp(clave, nodo.clave) < 0 {
-		return abb.guardarRec(nodo.izquierdo, clave, dato)
+		nodo.izquierdo = abb.guardarRec(nodo.izquierdo, clave, dato)
 	} else if abb.cmp(clave, nodo.clave) > 0 {
-		return abb.guardarRec(nodo.derecho, clave, dato)
+		nodo.derecho = abb.guardarRec(nodo.derecho, clave, dato)
 	}
 	return &nodoAbb[K, V]{nodo.izquierdo, nodo.derecho, clave, dato}
 }
@@ -62,7 +64,7 @@ func (abb *abb[K, V]) perteneceRec(nodo *nodoAbb[K, V], clave K) bool {
 	} else if abb.cmp(clave, nodo.clave) > 0 {
 		return abb.perteneceRec(nodo.derecho, clave)
 	}
-	return false
+	return false //hay que arreglar algo del false
 }
 
 func (abb *abb[K, V]) Obtener(clave K) V {

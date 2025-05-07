@@ -54,9 +54,9 @@ func TestAbbUnElemento(t *testing.T) {
 
 func TestAbbGuardar(t *testing.T) {
 	t.Log("Guarda elementos en el ABB y comprueba que las claves y valores sean correctos en todo momento")
-	claves := []string{"Gato", "Perro", "Vaca"}
-	valores := []string{"miau", "guau", "moo"}
-	abb := TDADiccionario.CrearABB[string, string](strings.Compare)
+	claves := []int{6, 12, 1}
+	valores := []string{"valor1", "valor2", "valor3"}
+	abb := TDADiccionario.CrearABB[int, string](cmpInt)
 	require.False(t, abb.Pertenece(claves[0]))
 	abb.Guardar(claves[0], valores[0])
 	require.EqualValues(t, 1, abb.Cantidad())
@@ -85,22 +85,22 @@ func TestAbbGuardar(t *testing.T) {
 
 func TestReemplazoDatos(t *testing.T) {
 	t.Log("Guarda un par de claves, y luego vuelve a guardar, buscando que el dato se haya reemplazado")
-	abb := TDADiccionario.CrearABB[string, string](strings.Compare)
-	abb.Guardar("Gato", "miau")
-	abb.Guardar("Perro", "guau")
-	require.True(t, abb.Pertenece("Gato"))
-	require.True(t, abb.Pertenece("Perro"))
-	require.EqualValues(t, "miau", abb.Obtener("Gato"))
-	require.EqualValues(t, "guau", abb.Obtener("Perro"))
+	abb := TDADiccionario.CrearABB[int, string](cmpInt)
+	abb.Guardar(8, "valor1")
+	abb.Guardar(15, "valor2")
+	require.True(t, abb.Pertenece(8))
+	require.True(t, abb.Pertenece(15))
+	require.EqualValues(t, "valor1", abb.Obtener(8))
+	require.EqualValues(t, "valor2", abb.Obtener(15))
 	require.EqualValues(t, 2, abb.Cantidad())
 
-	abb.Guardar("Gato", "miu")
-	abb.Guardar("Perro", "baubau")
-	require.True(t, abb.Pertenece("Gato"))
-	require.True(t, abb.Pertenece("Perro"))
+	abb.Guardar(8, "valor3")
+	abb.Guardar(15, "valor4")
+	require.True(t, abb.Pertenece(8))
+	require.True(t, abb.Pertenece(15))
 	require.EqualValues(t, 2, abb.Cantidad())
-	require.EqualValues(t, "miu", abb.Obtener("Gato"))
-	require.EqualValues(t, "baubau", abb.Obtener("Perro"))
+	require.EqualValues(t, "valor3", abb.Obtener(8))
+	require.EqualValues(t, "valor4", abb.Obtener(15))
 }
 
 func TestReemplazoDatosHopscotch(t *testing.T) {
@@ -124,7 +124,7 @@ func TestReemplazoDatosHopscotch(t *testing.T) {
 func TestAbbBorrar(t *testing.T) {
 	t.Log("Guarda algunos pocos elementos en el diccionario, y se los borra, revisando que en todo momento " +
 		"el diccionario se comporte de manera adecuada")
-	claves := []int{15, 25, 10, 11, 30}
+	claves := []int{15, 25, 10, 20, 30}
 	valores := []string{"valor1", "valor2", "valor3", "valor4", "valor5"}
 	abb := TDADiccionario.CrearABB[int, string](cmpInt)
 
@@ -135,23 +135,32 @@ func TestAbbBorrar(t *testing.T) {
 	abb.Guardar(claves[3], valores[3])
 	abb.Guardar(claves[4], valores[4])
 
-	require.True(t, abb.Pertenece(claves[2]))
-	require.EqualValues(t, valores[2], abb.Borrar(claves[2]))
-	//require.PanicsWithValue(t, "La clave no pertenece al diccionario", func() { abb.Borrar(claves[2]) })
-	require.EqualValues(t, 4, abb.Cantidad())
-	//require.False(t, abb.Pertenece(claves[2]))
-
-	/*require.True(t, abb.Pertenece(claves[0]))
-	require.EqualValues(t, valores[0], abb.Borrar(claves[0]))
-	require.PanicsWithValue(t, "La clave no pertenece al diccionario", func() { abb.Borrar(claves[0]) })
-	require.EqualValues(t, 1, abb.Cantidad())
-	require.False(t, abb.Pertenece(claves[0]))
-	require.PanicsWithValue(t, "La clave no pertenece al diccionario", func() { abb.Obtener(claves[0]) })
-
 	require.True(t, abb.Pertenece(claves[1]))
 	require.EqualValues(t, valores[1], abb.Borrar(claves[1]))
 	require.PanicsWithValue(t, "La clave no pertenece al diccionario", func() { abb.Borrar(claves[1]) })
-	require.EqualValues(t, 0, abb.Cantidad())
+	require.EqualValues(t, 4, abb.Cantidad())
 	require.False(t, abb.Pertenece(claves[1]))
-	require.PanicsWithValue(t, "La clave no pertenece al diccionario", func() { abb.Obtener(claves[1]) })*/
+
+	require.True(t, abb.Pertenece(claves[0]))
+	require.EqualValues(t, valores[0], abb.Borrar(claves[0]))
+	require.PanicsWithValue(t, "La clave no pertenece al diccionario", func() { abb.Borrar(claves[0]) })
+	require.EqualValues(t, 3, abb.Cantidad())
+	require.False(t, abb.Pertenece(claves[0]))
+	require.PanicsWithValue(t, "La clave no pertenece al diccionario", func() { abb.Obtener(claves[0]) })
+
+	require.True(t, abb.Pertenece(claves[3]))
+	require.EqualValues(t, valores[3], abb.Borrar(claves[3]))
+	require.PanicsWithValue(t, "La clave no pertenece al diccionario", func() { abb.Borrar(claves[3]) })
+	require.EqualValues(t, 2, abb.Cantidad())
+	require.False(t, abb.Pertenece(claves[3]))
+	require.PanicsWithValue(t, "La clave no pertenece al diccionario", func() { abb.Obtener(claves[3]) })
+
+	require.EqualValues(t, valores[2], abb.Borrar(claves[2]))
+	require.PanicsWithValue(t, "La clave no pertenece al diccionario", func() { abb.Borrar(claves[2]) })
+	require.EqualValues(t, valores[4], abb.Borrar(claves[4]))
+	require.PanicsWithValue(t, "La clave no pertenece al diccionario", func() { abb.Borrar(claves[4]) })
+	require.False(t, abb.Pertenece(claves[2]))
+	require.False(t, abb.Pertenece(claves[4]))
+	require.EqualValues(t, 0, abb.Cantidad())
+
 }

@@ -32,6 +32,7 @@ func crearNodo[K comparable, V any](clave K, dato V) *nodoAbb[K, V] {
 	}
 }
 
+
 func (abb *abb[K, V]) Guardar(clave K, dato V) {
 	abb.raiz = abb.guardarRec(abb.raiz, clave, dato)
 }
@@ -51,75 +52,65 @@ func (abb *abb[K, V]) guardarRec(nodo *nodoAbb[K, V], clave K, dato V) *nodoAbb[
 	return nodo
 }
 
-func (abb *abb[K, V]) Pertenece(clave K) bool {
-	return abb.perteneceRec(abb.raiz, clave)
+func (abb *abb[K, V]) buscarNodo(nodo *nodoAbb[K, V], clave K) *nodoAbb[K, V]{
+	if nodo == nil{
+		return nil
+	}
+	if abb.cmp(clave, nodo.clave) == 0{
+		return nodo
+	} else if abb.cmp(clave, nodo.clave) < 0{
+		return abb.buscarNodo(nodo.izquierdo, clave)
+	}
+	return abb.buscarNodo(nodo.derecho, clave)
 }
 
-func (abb *abb[K, V]) perteneceRec(nodo *nodoAbb[K, V], clave K) bool {
-	if nodo == nil {
-		return false
-	}
-	if abb.cmp(clave, nodo.clave) < 0 {
-		return abb.perteneceRec(nodo.izquierdo, clave)
-	} else if abb.cmp(clave, nodo.clave) > 0 {
-		return abb.perteneceRec(nodo.derecho, clave)
-	}
-	return true
+func (abb *abb[K, V]) Pertenece(clave K) bool {
+	return abb.buscarNodo(abb.raiz, clave) != nil
 }
 
 func (abb *abb[K, V]) Obtener(clave K) V {
-	return abb.obtenerRec(abb.raiz, clave)
-}
-
-func (abb *abb[K, V]) obtenerRec(nodo *nodoAbb[K, V], clave K) V {
+	nodo := abb.buscarNodo(abb.raiz, clave)
 	if nodo == nil {
 		panic("La clave no pertenece al diccionario")
 	}
-	if abb.cmp(clave, nodo.clave) == 0 {
-		return nodo.dato
-	}
-	if abb.cmp(clave, nodo.clave) < 0 {
-		return abb.obtenerRec(nodo.izquierdo, clave)
-	}
-	return abb.obtenerRec(nodo.derecho, clave)
+	return nodo.dato
 }
 
 func (abb *abb[K, V]) Borrar(clave K) V {
-	return abb.borrarRec(abb.raiz, clave)
+	var valor V
+	abb.raiz, valor = abb.borrarRec(abb.raiz, clave)
+	return valor
 }
-func (abb *abb[K, V]) borrarRec(nodo *nodoAbb[K, V], clave K) V {
+func (abb *abb[K, V]) borrarRec(nodo *nodoAbb[K, V], clave K) (*nodoAbb[K, V], V) {
 	if nodo == nil {
 		panic("La clave no pertenece al diccionario")
 	}
+
+	var valor V
 	if abb.cmp(clave, nodo.clave) < 0 {
-		return abb.borrarRec(nodo.izquierdo, clave)
+		nodo.izquierdo, valor = abb.borrarRec(nodo.izquierdo, clave)
 	} else if abb.cmp(clave, nodo.clave) > 0 {
-		return abb.borrarRec(nodo.derecho, clave)
-	}
-	if nodo.izquierdo == nil && nodo.derecho == nil {
-		valor := nodo.dato
-		nodo = nil
-		abb.cantidad--
-		return valor
-	} else if nodo.izquierdo == nil && nodo.derecho != nil {
-		valor := nodo.dato
-		nodo = nodo.derecho
-		nodo.derecho = nil
-		abb.cantidad--
-		return valor
-	} else if nodo.izquierdo != nil && nodo.derecho == nil {
-		valor := nodo.dato
-		nodo = nodo.izquierdo
-		nodo.izquierdo = nil
-		abb.cantidad--
-		return valor
+		nodo.derecho, valor = abb.borrarRec(nodo.derecho, clave)
 	} else {
+		valor = nodo.dato
+
+		if nodo.izquierdo == nil && nodo.derecho == nil {
+			abb.cantidad--
+			return nil, valor
+		} else if nodo.izquierdo == nil && nodo.derecho != nil {
+			abb.cantidad--
+			return nodo.derecho, valor
+		} else if nodo.izquierdo != nil && nodo.derecho == nil {
+			abb.cantidad--
+			return nodo.izquierdo, valor
+		}
+		
 		siguienteInorder := abb.buscarSiguiente(nodo.derecho)
 		nodo.clave = siguienteInorder.clave
 		nodo.dato = siguienteInorder.dato
-		return abb.borrarRec(siguienteInorder, clave)
+		nodo.derecho, _ = abb.borrarRec(nodo.derecho, siguienteInorder.clave)
 	}
-	return nodo.dato
+	return nodo, valor
 }
 
 func (abb *abb[K, V]) buscarSiguiente(nodo *nodoAbb[K, V]) *nodoAbb[K, V] {
@@ -128,6 +119,7 @@ func (abb *abb[K, V]) buscarSiguiente(nodo *nodoAbb[K, V]) *nodoAbb[K, V] {
 	}
 	return nodo
 }
+
 func (abb *abb[K, V]) Cantidad() int {
 	return abb.cantidad
 }

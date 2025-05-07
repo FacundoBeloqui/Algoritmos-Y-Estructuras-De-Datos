@@ -95,16 +95,38 @@ func (abb *abb[K, V]) borrarRec(nodo *nodoAbb[K, V], clave K) V {
 		return abb.borrarRec(nodo.izquierdo, clave)
 	} else if abb.cmp(clave, nodo.clave) > 0 {
 		return abb.borrarRec(nodo.derecho, clave)
-	} else {
-		if nodo.izquierdo == nil && nodo.derecho == nil {
-			nodo = nil
-		} else if nodo.izquierdo == nil && nodo.derecho != nil {
-			nodo = nodo.derecho
-		} else if nodo.izquierdo != nil && nodo.derecho == nil {
-			nodo = nodo.izquierdo
-		}
 	}
-	panic("ni idea que hacer pero va pora aca xd")
+	if nodo.izquierdo == nil && nodo.derecho == nil {
+		valor := nodo.dato
+		nodo = nil
+		abb.cantidad--
+		return valor
+	} else if nodo.izquierdo == nil && nodo.derecho != nil {
+		valor := nodo.dato
+		nodo = nodo.derecho
+		nodo.derecho = nil
+		abb.cantidad--
+		return valor
+	} else if nodo.izquierdo != nil && nodo.derecho == nil {
+		valor := nodo.dato
+		nodo = nodo.izquierdo
+		nodo.izquierdo = nil
+		abb.cantidad--
+		return valor
+	} else {
+		siguienteInorder := abb.buscarSiguiente(nodo.derecho)
+		nodo.clave = siguienteInorder.clave
+		nodo.dato = siguienteInorder.dato
+		return abb.borrarRec(siguienteInorder, clave)
+	}
+	return nodo.dato
+}
+
+func (abb *abb[K, V]) buscarSiguiente(nodo *nodoAbb[K, V]) *nodoAbb[K, V] {
+	for nodo.izquierdo != nil {
+		nodo = nodo.izquierdo
+	}
+	return nodo
 }
 func (abb *abb[K, V]) Cantidad() int {
 	return abb.cantidad

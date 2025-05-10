@@ -7,10 +7,10 @@ import (
 )
 
 const (
-	TAMAÑO_INICIAL     = 17
-	FACTOR_CARGA_MAX   = 0.75
-	FACTOR_CARGA_MIN   = 0.25
-	FACTOR_REDIMENSION = 2
+	_TAMAÑO_INICIAL     = 17
+	_FACTOR_CARGA_MAX   = 2.15
+	_FACTOR_CARGA_MIN   = 0.25
+	_FACTOR_REDIMENSION = 2
 )
 
 type parClaveValor[K comparable, V any] struct {
@@ -24,13 +24,13 @@ type hashAbierto[K comparable, V any] struct {
 }
 
 func CrearHash[K comparable, V any]() Diccionario[K, V] {
-	tabla := make([]TDALista.Lista[parClaveValor[K, V]], TAMAÑO_INICIAL)
+	tabla := make([]TDALista.Lista[parClaveValor[K, V]], _TAMAÑO_INICIAL)
 	for i := range tabla {
 		tabla[i] = TDALista.CrearListaEnlazada[parClaveValor[K, V]]()
 	}
 	return &hashAbierto[K, V]{
 		tabla,
-		TAMAÑO_INICIAL,
+		_TAMAÑO_INICIAL,
 		0,
 	}
 }
@@ -46,37 +46,36 @@ func hashing[K comparable](clave K) uint32 {
 }
 
 func (hash *hashAbierto[K, V]) Guardar(clave K, dato V) {
-	if float32(hash.cantidad)/float32(hash.tam) > FACTOR_CARGA_MAX {
-		hash.redimensionar(hash.tam * FACTOR_REDIMENSION)
+	if float32(hash.cantidad)/float32(hash.tam) > _FACTOR_CARGA_MAX {
+		hash.redimensionar(hash.tam * _FACTOR_REDIMENSION)
 	}
 	iterador := hash.encontrarCampo(clave)
-	if iterador != nil {
+	if iterador.HaySiguiente() {
 		iterador.Borrar()
 		iterador.Insertar(parClaveValor[K, V]{clave, dato})
 		return
 	}
-	celda := hashing(clave) % uint32(hash.tam)
-	hash.tabla[celda].InsertarUltimo(parClaveValor[K, V]{clave, dato})
+	iterador.Insertar(parClaveValor[K, V]{clave, dato})
 	hash.cantidad++
 }
 
 func (hash *hashAbierto[K, V]) Pertenece(clave K) bool {
-	return hash.encontrarCampo(clave) != nil
+	return hash.encontrarCampo(clave).HaySiguiente()
 }
 
 func (hash *hashAbierto[K, V]) Obtener(clave K) V {
 	iterador := hash.encontrarCampo(clave)
-	hash.verificarIterador(iterador)
+	hash.verificarDiccionario(iterador)
 	return iterador.VerActual().dato
 }
 
 func (hash *hashAbierto[K, V]) Borrar(clave K) V {
 	iterador := hash.encontrarCampo(clave)
-	hash.verificarIterador(iterador)
+	hash.verificarDiccionario(iterador)
 	campo := iterador.Borrar()
 	hash.cantidad--
-	if hash.tam > TAMAÑO_INICIAL && float32(hash.cantidad)/float32(hash.tam) < FACTOR_CARGA_MIN {
-		hash.redimensionar(hash.tam / FACTOR_REDIMENSION)
+	if hash.tam > _TAMAÑO_INICIAL && float32(hash.cantidad)/float32(hash.tam) < _FACTOR_CARGA_MIN {
+		hash.redimensionar(hash.tam / _FACTOR_REDIMENSION)
 	}
 	return campo.dato
 }
@@ -94,7 +93,7 @@ func (hash *hashAbierto[K, V]) encontrarCampo(clave K) TDALista.IteradorLista[pa
 		}
 		iterador.Siguiente()
 	}
-	return nil
+	return iterador
 }
 
 func (hash *hashAbierto[K, V]) redimensionar(nuevoTam int) {
@@ -103,19 +102,18 @@ func (hash *hashAbierto[K, V]) redimensionar(nuevoTam int) {
 		nuevaTabla[i] = TDALista.CrearListaEnlazada[parClaveValor[K, V]]()
 	}
 	for _, lista := range hash.tabla {
-		iterador := lista.Iterador()
-		for iterador.HaySiguiente() {
+		for iterador := lista.Iterador(); iterador.HaySiguiente(); iterador.Siguiente() {
 			nuevaCelda := hashing(iterador.VerActual().clave) % uint32(nuevoTam)
 			nuevaTabla[nuevaCelda].InsertarUltimo(iterador.VerActual())
-			iterador.Siguiente()
 		}
 	}
+
 	hash.tabla = nuevaTabla
 	hash.tam = nuevoTam
 }
 
-func (hash *hashAbierto[K, V]) verificarIterador(iterador TDALista.IteradorLista[parClaveValor[K, V]]) {
-	if iterador == nil {
+func (hash *hashAbierto[K, V]) verificarDiccionario(iterador TDALista.IteradorLista[parClaveValor[K, V]]) {
+	if !iterador.HaySiguiente() {
 		panic("La clave no pertenece al diccionario")
 	}
 }

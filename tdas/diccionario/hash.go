@@ -130,14 +130,14 @@ func (hash *hashAbierto[K, V]) Iterar(f func(clave K, dato V) bool) {
 	}
 }
 
-type iterDiccionario[K comparable, V any] struct {
+type iterHash[K comparable, V any] struct {
 	hash          *hashAbierto[K, V]
 	iteradorLista TDALista.IteradorLista[parClaveValor[K, V]]
 	posicion      int
 }
 
 func (hash *hashAbierto[K, V]) Iterador() IterDiccionario[K, V] {
-	iter := &iterDiccionario[K, V]{
+	iter := &iterHash[K, V]{
 		hash,
 		nil,
 		-1,
@@ -152,16 +152,16 @@ func (hash *hashAbierto[K, V]) Iterador() IterDiccionario[K, V] {
 	return iter
 }
 
-func (iter *iterDiccionario[K, V]) HaySiguiente() bool {
+func (iter *iterHash[K, V]) HaySiguiente() bool {
 	return iter.iteradorLista.HaySiguiente()
 }
 
-func (iter *iterDiccionario[K, V]) VerActual() (K, V) {
+func (iter *iterHash[K, V]) VerActual() (K, V) {
 	iter.verificarIterador()
 	return iter.iteradorLista.VerActual().clave, iter.iteradorLista.VerActual().dato
 }
 
-func (iter *iterDiccionario[K, V]) Siguiente() {
+func (iter *iterHash[K, V]) Siguiente() {
 	iter.verificarIterador()
 	iter.iteradorLista.Siguiente()
 	if !iter.iteradorLista.HaySiguiente() {
@@ -174,7 +174,7 @@ func (iter *iterDiccionario[K, V]) Siguiente() {
 	}
 }
 
-func (iter *iterDiccionario[K, V]) encontrarLista(desde int) int {
+func (iter *iterHash[K, V]) encontrarLista(desde int) int {
 	for i := desde; i < iter.hash.tam; i++ {
 		if !iter.hash.tabla[i].EstaVacia() {
 			return i
@@ -183,7 +183,7 @@ func (iter *iterDiccionario[K, V]) encontrarLista(desde int) int {
 	return -1
 }
 
-func (iter *iterDiccionario[K, V]) verificarIterador() {
+func (iter *iterHash[K, V]) verificarIterador() {
 	if !iter.HaySiguiente() {
 		panic("El iterador termino de iterar")
 	}

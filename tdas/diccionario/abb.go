@@ -1,5 +1,7 @@
 package diccionario
 
+import TDAPila "tdas/pila"
+
 type nodoAbb[K comparable, V any] struct {
 	izquierdo *nodoAbb[K, V]
 	derecho   *nodoAbb[K, V]
@@ -137,9 +139,47 @@ func (nodo *nodoAbb[K, V]) Iterar(f func(clave K, dato V) bool) {
 	nodo.derecho.Iterar(f)
 }
 
+type iterAbb[K comparable, V any] struct {
+	pila TDAPila.Pila[nodoAbb[K, V]]
+	abb  abb[K, V]
+}
+
 func (abb *abb[K, V]) Iterador() IterDiccionario[K, V] {
-	//TODO implement me
-	panic("implement me")
+	iter := &iterAbb[K, V]{
+		pila: TDAPila.CrearPilaDinamica[nodoAbb[K, V]](),
+		abb:  *abb,
+	}
+	iter.apilarHijosIzquierdos(abb.raiz)
+	return iter
+}
+func (iter *iterAbb[K, V]) apilarHijosIzquierdos(nodo *nodoAbb[K, V]) {
+	if nodo == nil {
+		return
+	}
+	iter.pila.Apilar(*nodo)
+	iter.apilarHijosIzquierdos(nodo.izquierdo)
+}
+func (iter *iterAbb[K, V]) HaySiguiente() bool {
+	return iter.pila.EstaVacia()
+}
+
+func (iter *iterAbb[K, V]) VerActual() (K, V) {
+	if iter.pila.EstaVacia() {
+		panic("El iterador termino de iterar")
+	}
+	return iter.pila.VerTope().clave, iter.pila.VerTope().dato
+}
+
+func (iter *iterAbb[K, V]) Siguiente() {
+	if iter.pila.EstaVacia() {
+		panic("El iterador termino de iterar")
+	}
+
+	nodo := iter.pila.Desapilar()
+	if nodo.derecho != nil {
+		iter.pila.Apilar(*nodo.derecho)
+		iter.apilarHijosIzquierdos(nodo.derecho)
+	}
 }
 
 func (abb *abb[K, V]) IterarRango(desde *K, hasta *K, visitar func(clave K, dato V) bool) {
@@ -170,6 +210,34 @@ func (nodo *nodoAbb[K, V]) iterarRango(desde *K, hasta *K, visitar func(clave K,
 }
 
 func (abb *abb[K, V]) IteradorRango(desde *K, hasta *K) IterDiccionario[K, V] {
-	//TODO implement me
-	panic("implement me")
+	iter := &iterAbb[K, V]{
+		pila: TDAPila.CrearPilaDinamica[nodoAbb[K, V]](),
+		abb:  *abb,
+	}
+
+	padre := abb.raiz.BuscarPadre(*desde, abb.cmp)
+	iter.pila.Apilar(*padre)
+	
+	return iter
+
+}
+
+func (nodo *nodoAbb[K, V]) BuscarPadre(desde K, funcCmp func(K, K) int) *nodoAbb[K, V] {
+	if nodo == nil {
+		return nil
+	}
+	if funcCmp(desde, nodo.clave) == 0 {
+		return nil
+	}
+	if funcCmp(desde, nodo.clave) < 0 {
+		if nodo.izquierdo != nil && funcCmp(nodo.izquierdo.clave, desde) <= 0 && funcCmp(desde, nodo.izquierdo.clave) == 0 {
+			return nodo
+		}
+		return nodo.izquierdo.BuscarPadre(desde, funcCmp)
+	} else {
+		if nodo.derecho != nil && funcCmp(nodo.derecho.clave, desde) >= 0 && funcCmp(desde, nodo.derecho.clave) == 0 {
+			return nodo
+		}
+		return nodo.derecho.BuscarPadre(desde, funcCmp)
+	}
 }

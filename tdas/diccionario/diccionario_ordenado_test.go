@@ -1,6 +1,7 @@
 package diccionario_test
 
 import (
+	"fmt"
 	//"fmt"
 	"strings"
 	TDADiccionario "tdas/diccionario"
@@ -8,6 +9,8 @@ import (
 
 	"github.com/stretchr/testify/require"
 )
+
+var TAMS_VOLUMEN_ABB = []int{12500, 25000, 50000, 100000, 200000, 400000}
 
 var cmpInt = func(a, b int) int {
 	if a < b {
@@ -162,5 +165,149 @@ func TestAbbBorrar(t *testing.T) {
 	require.False(t, abb.Pertenece(claves[2]))
 	require.False(t, abb.Pertenece(claves[4]))
 	require.EqualValues(t, 0, abb.Cantidad())
+}
 
+func TestIteradorInternoAbbClaves(t *testing.T) {
+	t.Log("Valida que todas las claves sean recorridas (y una única vez) con el iterador interno")
+	clave1 := "Gato"
+	clave2 := "Perro"
+	clave3 := "Vaca"
+	claves := []string{clave1, clave2, clave3}
+	abb := TDADiccionario.CrearABB[string, *int](strings.Compare)
+	abb.Guardar(claves[0], nil)
+	abb.Guardar(claves[1], nil)
+	abb.Guardar(claves[2], nil)
+
+	cs := []string{"", "", ""}
+	cantidad := 0
+	cantPtr := &cantidad
+
+	abb.Iterar(func(clave string, dato *int) bool {
+		cs[cantidad] = clave
+		*cantPtr = *cantPtr + 1
+		return true
+	})
+
+	require.EqualValues(t, 3, cantidad)
+	require.NotEqualValues(t, -1, buscar(cs[0], claves))
+	require.NotEqualValues(t, -1, buscar(cs[1], claves))
+	require.NotEqualValues(t, -1, buscar(cs[2], claves))
+	require.NotEqualValues(t, cs[0], cs[1])
+	require.NotEqualValues(t, cs[0], cs[2])
+	require.NotEqualValues(t, cs[2], cs[1])
+}
+
+func TestIteradorInternoAbbValores(t *testing.T) {
+	t.Log("Valida que los datos sean recorridas correctamente (y una única vez) con el iterador interno")
+	clave1 := "Gato"
+	clave2 := "Perro"
+	clave3 := "Vaca"
+	clave4 := "Burrito"
+	clave5 := "Hamster"
+
+	abb := TDADiccionario.CrearABB[string, int](strings.Compare)
+	abb.Guardar(clave1, 6)
+	abb.Guardar(clave2, 2)
+	abb.Guardar(clave3, 3)
+	abb.Guardar(clave4, 4)
+	abb.Guardar(clave5, 5)
+
+	factorial := 1
+	ptrFactorial := &factorial
+	abb.Iterar(func(_ string, dato int) bool {
+		*ptrFactorial *= dato
+		return true
+	})
+
+	require.EqualValues(t, 720, factorial)
+}
+
+func TestIteradorInternoAbbValoresConBorrados(t *testing.T) {
+	t.Log("Valida que los datos sean recorridas correctamente (y una única vez) con el iterador interno, sin recorrer datos borrados")
+	clave0 := "Elefante"
+	clave1 := "Gato"
+	clave2 := "Perro"
+	clave3 := "Vaca"
+	clave4 := "Burrito"
+	clave5 := "Hamster"
+
+	abb := TDADiccionario.CrearABB[string, int](strings.Compare)
+	abb.Guardar(clave0, 7)
+	abb.Guardar(clave1, 6)
+	abb.Guardar(clave2, 2)
+	abb.Guardar(clave3, 3)
+	abb.Guardar(clave4, 4)
+	abb.Guardar(clave5, 5)
+
+	abb.Borrar(clave0)
+
+	factorial := 1
+	ptrFactorial := &factorial
+	abb.Iterar(func(_ string, dato int) bool {
+		*ptrFactorial *= dato
+		return true
+	})
+
+	require.EqualValues(t, 720, factorial)
+}
+
+func ejecutarPruebaVolumenAbb(b *testing.B, n int) {
+	abb := TDADiccionario.CrearHash[string, int]()
+
+	claves := make([]string, n)
+	valores := make([]int, n)
+
+	/* Inserta 'n' parejas en el hash */
+	for i := 0; i < n; i++ {
+		valores[i] = i
+		claves[i] = fmt.Sprintf("%08d", i)
+		abb.Guardar(claves[i], valores[i])
+	}
+
+	require.EqualValues(b, n, abb.Cantidad(), "La cantidad de elementos es incorrecta")
+
+	/* Verifica que devuelva los valores correctos */
+	ok := true
+	for i := 0; i < n; i++ {
+		ok = abb.Pertenece(claves[i])
+		if !ok {
+			break
+		}
+		ok = abb.Obtener(claves[i]) == valores[i]
+		if !ok {
+			break
+		}
+	}
+
+	require.True(b, ok, "Pertenece y Obtener con muchos elementos no funciona correctamente")
+	require.EqualValues(b, n, abb.Cantidad(), "La cantidad de elementos es incorrecta")
+
+	/* Verifica que borre y devuelva los valores correctos */
+	for i := 0; i < n; i++ {
+		ok = abb.Borrar(claves[i]) == valores[i]
+		if !ok {
+			break
+		}
+		ok = !abb.Pertenece(claves[i])
+		if !ok {
+			break
+		}
+	}
+
+	require.True(b, ok, "Borrar muchos elementos no funciona correctamente")
+	require.EqualValues(b, 0, abb.Cantidad())
+}
+
+func BenchmarkAbb(b *testing.B) {
+	b.Log("Prueba de stress del Diccionario. Prueba guardando distinta cantidad de elementos (muy grandes), " +
+		"ejecutando muchas veces las pruebas para generar un benchmark. Valida que la cantidad " +
+		"sea la adecuada. Luego validamos que podemos obtener y ver si pertenece cada una de las claves geeneradas, " +
+		"y que luego podemos borrar sin problemas")
+	for _, n := range TAMS_VOLUMEN_ABB {
+		b.Run(fmt.Sprintf("Prueba %d elementos", n), func(b *testing.B) {
+			for i := 0; i < b.N; i++ {
+				ejecutarPruebaVolumenAbb(b, n)
+			}
+		})
+	}
 }

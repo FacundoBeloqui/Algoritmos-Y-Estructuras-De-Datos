@@ -32,7 +32,6 @@ func crearNodo[K comparable, V any](clave K, dato V) *nodoAbb[K, V] {
 	}
 }
 
-
 func (abb *abb[K, V]) Guardar(clave K, dato V) {
 	abb.raiz = abb.guardarRec(abb.raiz, clave, dato)
 }
@@ -52,13 +51,13 @@ func (abb *abb[K, V]) guardarRec(nodo *nodoAbb[K, V], clave K, dato V) *nodoAbb[
 	return nodo
 }
 
-func (abb *abb[K, V]) buscarNodo(nodo *nodoAbb[K, V], clave K) *nodoAbb[K, V]{
-	if nodo == nil{
+func (abb *abb[K, V]) buscarNodo(nodo *nodoAbb[K, V], clave K) *nodoAbb[K, V] {
+	if nodo == nil {
 		return nil
 	}
-	if abb.cmp(clave, nodo.clave) == 0{
+	if abb.cmp(clave, nodo.clave) == 0 {
 		return nodo
-	} else if abb.cmp(clave, nodo.clave) < 0{
+	} else if abb.cmp(clave, nodo.clave) < 0 {
 		return abb.buscarNodo(nodo.izquierdo, clave)
 	}
 	return abb.buscarNodo(nodo.derecho, clave)
@@ -104,7 +103,7 @@ func (abb *abb[K, V]) borrarRec(nodo *nodoAbb[K, V], clave K) (*nodoAbb[K, V], V
 			abb.cantidad--
 			return nodo.izquierdo, valor
 		}
-		
+
 		siguienteInorder := abb.buscarSiguiente(nodo.derecho)
 		nodo.clave = siguienteInorder.clave
 		nodo.dato = siguienteInorder.dato
@@ -125,8 +124,17 @@ func (abb *abb[K, V]) Cantidad() int {
 }
 
 func (abb *abb[K, V]) Iterar(f func(clave K, dato V) bool) {
-	//TODO implement me
-	panic("implement me")
+	abb.raiz.Iterar(f)
+}
+func (nodo *nodoAbb[K, V]) Iterar(f func(clave K, dato V) bool) {
+	if nodo == nil {
+		return
+	}
+	nodo.izquierdo.Iterar(f)
+	if !f(nodo.clave, nodo.dato) {
+		return
+	}
+	nodo.derecho.Iterar(f)
 }
 
 func (abb *abb[K, V]) Iterador() IterDiccionario[K, V] {
@@ -135,8 +143,30 @@ func (abb *abb[K, V]) Iterador() IterDiccionario[K, V] {
 }
 
 func (abb *abb[K, V]) IterarRango(desde *K, hasta *K, visitar func(clave K, dato V) bool) {
-	//TODO implement me
-	panic("implement me")
+	if abb.raiz == nil {
+		return
+	}
+	abb.raiz.iterarRango(desde, hasta, visitar, abb.cmp)
+}
+
+func (nodo *nodoAbb[K, V]) iterarRango(desde *K, hasta *K, visitar func(clave K, dato V) bool, funcCmp func(K, K) int) {
+	if nodo == nil {
+		return
+	}
+
+	if desde == nil || funcCmp(nodo.clave, *desde) > 0 {
+		nodo.izquierdo.iterarRango(desde, hasta, visitar, funcCmp)
+	}
+
+	if (desde == nil || funcCmp(nodo.clave, *desde) >= 0) && (hasta == nil || funcCmp(nodo.clave, *hasta) <= 0) {
+		if !visitar(nodo.clave, nodo.dato) {
+			return
+		}
+	}
+
+	if hasta == nil || funcCmp(nodo.clave, *hasta) < 0 {
+		nodo.derecho.iterarRango(desde, hasta, visitar, funcCmp)
+	}
 }
 
 func (abb *abb[K, V]) IteradorRango(desde *K, hasta *K) IterDiccionario[K, V] {

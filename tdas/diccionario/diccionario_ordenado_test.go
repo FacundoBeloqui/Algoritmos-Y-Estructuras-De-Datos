@@ -311,3 +311,29 @@ func BenchmarkAbb(b *testing.B) {
 		})
 	}
 }
+
+
+func TestIteradorRango(t *testing.T) {
+	abb := TDADiccionario.CrearABB[int, string](cmpInt)
+
+	abb.Guardar(10, "A")
+	abb.Guardar(5, "B")
+	abb.Guardar(15, "C")
+	abb.Guardar(3, "D")
+	abb.Guardar(7, "E")
+	abb.Guardar(12, "F")
+	abb.Guardar(18, "G")
+
+	desde := 5
+	hasta := 15
+	iter := abb.IteradorRango(&desde, &hasta)
+
+	var claves []int
+	for iter.HaySiguiente(){
+		clave, _ := iter.VerActual()
+		claves = append(claves, clave)
+	}
+
+	esperado := []int{3, 5, 7, 10, 12, 15, 18}
+	require.Equal(t, esperado, claves)
+}

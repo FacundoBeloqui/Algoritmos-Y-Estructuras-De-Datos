@@ -125,7 +125,6 @@ func (abb *abb[K, V]) Cantidad() int {
 	return abb.cantidad
 }
 
-//<----------- ITERADOR INTERNO ----------->
 
 func (abb *abb[K, V]) Iterar(f func(clave K, dato V) bool) {
 	abb.IterarRango(nil, nil, f)
@@ -158,7 +157,6 @@ func (nodo *nodoAbb[K, V]) iterarRango(desde *K, hasta *K, visitar func(clave K,
 	}
 }
 
-//<----------- ITERADOR EXTERNO ----------->
 
 type iterAbb[K comparable, V any] struct {
 	pila  TDAPila.Pila[nodoAbb[K, V]]
@@ -168,13 +166,7 @@ type iterAbb[K comparable, V any] struct {
 }
 
 func (abb *abb[K, V]) Iterador() IterDiccionario[K, V] {
-	iter := &iterAbb[K, V]{
-		pila:  TDAPila.CrearPilaDinamica[nodoAbb[K, V]](),
-		cmp:   abb.cmp,
-		desde: nil,
-		hasta: nil,
-	}
-	return iter
+	return abb.IteradorRango(nil, nil)
 }
 
 func (abb *abb[K, V]) IteradorRango(desde *K, hasta *K) IterDiccionario[K, V] {
@@ -193,16 +185,12 @@ func (iter *iterAbb[K, V]) HaySiguiente() bool {
 }
 
 func (iter *iterAbb[K, V]) VerActual() (K, V) {
-	if iter.pila.EstaVacia() {
-		panic("El iterador termino de iterar")
-	}
+	iter.verificarPila()
 	return iter.pila.VerTope().clave, iter.pila.VerTope().dato
 }
 
 func (iter *iterAbb[K, V]) Siguiente() {
-	if iter.pila.EstaVacia() {
-		panic("El iterador termino de iterar")
-	}
+	iter.verificarPila()
 	nodo := iter.pila.Desapilar()
 	iter.apilarDesdeHasta(nodo.derecho)
 }
@@ -217,5 +205,11 @@ func (iter *iterAbb[K, V]) apilarDesdeHasta(nodo *nodoAbb[K, V]) {
 			iter.pila.Apilar(*nodo)
 			nodo = nodo.izquierdo
 		}
+	}
+}
+
+func (iter *iterAbb[K, V]) verificarPila() {
+	if iter.pila.EstaVacia(){
+		panic("El iterador termino de iterar")
 	}
 }

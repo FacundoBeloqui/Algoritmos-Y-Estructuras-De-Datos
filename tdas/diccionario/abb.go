@@ -161,61 +161,35 @@ func (nodo *nodoAbb[K, V]) iterarRango(desde *K, hasta *K, visitar func(clave K,
 //<----------- ITERADOR EXTERNO ----------->
 
 type iterAbb[K comparable, V any] struct {
-	pila TDAPila.Pila[nodoAbb[K, V]]
-	abb  abb[K, V]
+	pila  TDAPila.Pila[nodoAbb[K, V]]
+	cmp   funcCmp[K]
+	desde *K
+	hasta *K
 }
 
 func (abb *abb[K, V]) Iterador() IterDiccionario[K, V] {
 	iter := &iterAbb[K, V]{
-		pila: TDAPila.CrearPilaDinamica[nodoAbb[K, V]](),
-		abb:  *abb,
+		pila:  TDAPila.CrearPilaDinamica[nodoAbb[K, V]](),
+		cmp:   abb.cmp,
+		desde: nil,
+		hasta: nil,
 	}
-	iter.apilarHijosIzquierdos(abb.raiz)
 	return iter
-}
-func (iter *iterAbb[K, V]) apilarHijosIzquierdos(nodo *nodoAbb[K, V]) {
-	if nodo == nil {
-		return
-	}
-	iter.pila.Apilar(*nodo)
-	iter.apilarHijosIzquierdos(nodo.izquierdo)
 }
 
 func (abb *abb[K, V]) IteradorRango(desde *K, hasta *K) IterDiccionario[K, V] {
 	iter := &iterAbb[K, V]{
-		pila: TDAPila.CrearPilaDinamica[nodoAbb[K, V]](),
-		abb:  *abb,
+		pila:  TDAPila.CrearPilaDinamica[nodoAbb[K, V]](),
+		cmp:   abb.cmp,
+		desde: desde,
+		hasta: hasta,
 	}
-
-	padre := abb.raiz.BuscarPadre(*desde, abb.cmp)
-	iter.pila.Apilar(*padre)
-	
+	iter.apilarDesdeHasta(abb.raiz)
 	return iter
-
-}
-
-func (nodo *nodoAbb[K, V]) BuscarPadre(desde K, funcCmp func(K, K) int) *nodoAbb[K, V] {
-	if nodo == nil {
-		return nil
-	}
-	if funcCmp(desde, nodo.clave) == 0 {
-		return nil
-	}
-	if funcCmp(desde, nodo.clave) < 0 {
-		if nodo.izquierdo != nil && funcCmp(nodo.izquierdo.clave, desde) <= 0 && funcCmp(desde, nodo.izquierdo.clave) == 0 {
-			return nodo
-		}
-		return nodo.izquierdo.BuscarPadre(desde, funcCmp)
-	} else {
-		if nodo.derecho != nil && funcCmp(nodo.derecho.clave, desde) >= 0 && funcCmp(desde, nodo.derecho.clave) == 0 {
-			return nodo
-		}
-		return nodo.derecho.BuscarPadre(desde, funcCmp)
-	}
 }
 
 func (iter *iterAbb[K, V]) HaySiguiente() bool {
-	return iter.pila.EstaVacia()
+	return !iter.pila.EstaVacia()
 }
 
 func (iter *iterAbb[K, V]) VerActual() (K, V) {
@@ -229,10 +203,19 @@ func (iter *iterAbb[K, V]) Siguiente() {
 	if iter.pila.EstaVacia() {
 		panic("El iterador termino de iterar")
 	}
-
 	nodo := iter.pila.Desapilar()
-	if nodo.derecho != nil {
-		iter.pila.Apilar(*nodo.derecho)
-		iter.apilarHijosIzquierdos(nodo.derecho)
+	iter.apilarDesdeHasta(nodo.derecho)
+}
+
+func (iter *iterAbb[K, V]) apilarDesdeHasta(nodo *nodoAbb[K, V]) {
+	for nodo != nil {
+		if iter.desde != nil && iter.cmp(nodo.clave, *iter.desde) < 0 {
+			nodo = nodo.derecho
+		} else if iter.hasta != nil && iter.cmp(nodo.clave, *iter.hasta) > 0 {
+			nodo = nodo.izquierdo
+		} else {
+			iter.pila.Apilar(*nodo)
+			nodo = nodo.izquierdo
+		}
 	}
 }

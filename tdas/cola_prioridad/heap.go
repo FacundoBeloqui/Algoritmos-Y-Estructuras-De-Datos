@@ -36,14 +36,15 @@ func (heap *colaConPrioridad[T]) EstaVacia() bool {
 
 func (heap *colaConPrioridad[T]) Encolar(elemento T) {
 	heap.datos = append(heap.datos, elemento)
+	heap.cant++
 	heap.upheap()
 }
 func (heap *colaConPrioridad[T]) upheap() {
-	posicionHijo := len(heap.datos) - 1
+	posicionHijo := heap.cant
 	posicionPadre := heap.calcularPosicionPadre(posicionHijo)
 	padre := heap.datos[posicionPadre]
 	hijo := heap.datos[posicionHijo]
-	for heap.cmp(hijo, padre) > 0 || posicionHijo == 0 {
+	for heap.cmp(hijo, padre) > 0 || posicionHijo != 0 {
 		posicionHijo = posicionPadre
 		posicionPadre = heap.calcularPosicionPadre(posicionHijo)
 	}
@@ -55,7 +56,7 @@ func (heap *colaConPrioridad[T]) VerMax() T {
 
 func (heap *colaConPrioridad[T]) Desencolar() T {
 	heap.verifcarColaVacia()
-
+	return heap.datos[len(heap.datos)-1]
 }
 
 func (heap *colaConPrioridad[T]) Cantidad() int {

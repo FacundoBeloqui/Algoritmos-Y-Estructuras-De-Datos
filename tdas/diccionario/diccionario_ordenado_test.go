@@ -2,11 +2,9 @@ package diccionario_test
 
 import (
 	"fmt"
-	//"fmt"
 	"strings"
 	TDADiccionario "tdas/diccionario"
 	"testing"
-
 	"github.com/stretchr/testify/require"
 )
 
@@ -330,8 +328,7 @@ func TestIteradorRango(t *testing.T) {
 	abb.Guardar(12, "F")
 	abb.Guardar(18, "G")
 
-	desde := 5
-	//hasta := 15
+	desde := 8
 	iter := abb.IteradorRango(&desde, nil)
 
 	var claves []int
@@ -341,6 +338,63 @@ func TestIteradorRango(t *testing.T) {
 		iter.Siguiente()
 	}
 
-	esperado := []int{5, 7, 10, 12, 15, 18}
+	esperado := []int{10, 12, 15, 18}
 	require.Equal(t, esperado, claves)
+}
+
+func TestAbbBorrarRaiz(t *testing.T) {
+	abb := TDADiccionario.CrearABB[int, string](cmpInt)
+
+	abb.Guardar(11, "A")
+	abb.Guardar(8, "B")
+	abb.Guardar(15, "C")
+	abb.Guardar(3, "D")
+	abb.Guardar(5, "E")
+	abb.Guardar(12, "F")
+	abb.Guardar(18, "G")
+
+	abb.Borrar(11)
+	iter := abb.Iterador()
+
+	var claves []int
+	for iter.HaySiguiente() {
+		clave, _ := iter.VerActual()
+		claves = append(claves, clave)
+		iter.Siguiente()
+	}
+
+	esperado := []int{3, 5, 8, 12, 15, 18}
+	require.Equal(t, esperado, claves)
+}
+
+func TestAbbIteradorExterno(t *testing.T){
+	abb := TDADiccionario.CrearABB[int, string](cmpInt)
+	
+	claves := []int{25, 10, 32, 14, 2, 1}
+	valores := []string{"A", "B", "C", "D", "E", "F"}
+	abb.Guardar(claves[0], valores[0])
+	abb.Guardar(claves[1], valores[1])
+	abb.Guardar(claves[2], valores[2])
+	abb.Guardar(claves[3], valores[3])
+	abb.Guardar(claves[4], valores[4])
+	abb.Guardar(claves[5], valores[5])
+
+	clavesEsperadas := []int{1, 2, 10, 14, 25, 32}
+	valoresEsperados := []string{"F", "E", "B", "D", "A", "C"}
+	
+	iter := abb.Iterador()
+
+	
+	for i:= 0; iter.HaySiguiente(); i++{
+		clave, valor := iter.VerActual()
+		require.Equal(t, clavesEsperadas[i], clave)
+		require.Equal(t, valoresEsperados[i], valor)
+		require.True(t, iter.HaySiguiente())
+		iter.Siguiente()
+	}
+	
+	require.PanicsWithValue(t, "El iterador termino de iterar", func () {iter.Siguiente()})
+	require.PanicsWithValue(t, "El iterador termino de iterar", func () {iter.VerActual()})
+
+
 }

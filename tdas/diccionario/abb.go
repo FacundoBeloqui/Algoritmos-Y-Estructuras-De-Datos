@@ -173,8 +173,7 @@ type iterAbb[K comparable, V any] struct {
 }
 
 func (abb *abb[K, V]) Iterador() IterDiccionario[K, V] {
-	iter := abb.IteradorRango(nil, nil)
-	return iter
+	return abb.IteradorRango(nil, nil)
 }
 
 func (abb *abb[K, V]) IteradorRango(desde *K, hasta *K) IterDiccionario[K, V] {

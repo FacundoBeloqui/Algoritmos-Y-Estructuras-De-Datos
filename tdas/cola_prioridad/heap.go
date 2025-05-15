@@ -29,7 +29,9 @@ func (heap *colaConPrioridad[T]) EstaVacia() bool {
 }
 
 func (heap *colaConPrioridad[T]) Encolar(elemento T) {
-
+	heap.cant++
+	heap.datos[heap.cant] = elemento
+	upheap(heap.datos, heap.cant, heap.cmp)
 }
 
 func (heap *colaConPrioridad[T]) VerMax() T {
@@ -39,14 +41,36 @@ func (heap *colaConPrioridad[T]) VerMax() T {
 
 func (heap *colaConPrioridad[T]) Desencolar() T {
 	heap.verifcarColaVacia()
-	
+	elemento := heap.datos[0]
+
+
+
+	return elemento
 }
 
 func (heap *colaConPrioridad[T]) Cantidad() int {
 	return heap.cant
 }
 
-func HeapSort[T any](elementos []T, funcion_cmp func(T, T) int){
+func upheap[T any] (datos []T, i int, funcion_cmp func(T, T) int){
+	for /*no se bien que poner aca*/ {
+		padre := (i-1)/2
+		if funcion_cmp(datos[i], datos[padre]) > 0{
+			datos[i], datos[padre] = datos[padre], datos[i]
+			i = padre
+		} else {
+			break
+		}
+	}
+
+}
+
+func downheap[T any] (datos[]T, i int, funcion_cmp func(T, T) int){
+
+
+}
+
+func HeapSort[T any](datos []T, funcion_cmp func(T, T) int){
 
 }
 

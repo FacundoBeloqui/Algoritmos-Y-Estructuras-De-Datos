@@ -56,7 +56,40 @@ func (heap *colaConPrioridad[T]) VerMax() T {
 
 func (heap *colaConPrioridad[T]) Desencolar() T {
 	heap.verifcarColaVacia()
-	return heap.datos[len(heap.datos)-1]
+	dato := heap.datos[0]
+	
+	heap.cant--
+	heap.datos[0] = heap.datos[heap.cant]
+	heap.datos = heap.datos[:heap.cant]
+
+	heap.downheap()
+	return dato
+}
+
+func (heap *colaConPrioridad[T]) downheap(){
+	posicionPadre := 0
+
+	for posicionPadre < heap.cant {
+		hijoIzquierdo := heap.calcularPosicionHijoIzquierdo(posicionPadre)
+		hijoDerecho := heap.calcularPosicionHijoDerecho(posicionPadre)
+		mayor := posicionPadre
+
+		if heap.cmp(heap.datos[hijoIzquierdo], heap.datos[mayor]) > 0{
+			mayor = hijoIzquierdo
+		}
+
+		if heap.cmp(heap.datos[hijoDerecho], heap.datos[mayor]) > 0{
+			mayor = hijoDerecho
+		}
+
+		if mayor == posicionPadre {
+			break
+		}
+
+		heap.datos[posicionPadre], heap.datos[mayor] = heap.datos[mayor], heap.datos[posicionPadre]
+		posicionPadre = mayor
+
+	}
 }
 
 func (heap *colaConPrioridad[T]) Cantidad() int {

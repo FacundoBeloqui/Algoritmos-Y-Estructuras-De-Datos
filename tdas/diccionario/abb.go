@@ -83,47 +83,44 @@ func (abb *Abb[K, V]) Obtener(clave K) V {
 }
 
 func (abb *Abb[K, V]) Borrar(clave K) V {
-	var valor V
-	abb.raiz, valor = abb.borrarRec(abb.raiz, clave)
-	return valor
-}
-func (abb *Abb[K, V]) borrarRec(nodo *NodoAbb[K, V], clave K) (*NodoAbb[K, V], V) {
+	nodo, padre := abb.buscarConPadre(abb.raiz, clave)
 	if nodo == nil {
 		panic("La clave no pertenece al diccionario")
 	}
-
-	var valor V
-	if abb.cmp(clave, nodo.clave) < 0 {
-		nodo.izquierdo, valor = abb.borrarRec(nodo.izquierdo, clave)
-	} else if abb.cmp(clave, nodo.clave) > 0 {
-		nodo.derecho, valor = abb.borrarRec(nodo.derecho, clave)
-	} else {
-		valor = nodo.dato
-
-		if nodo.izquierdo == nil && nodo.derecho == nil {
-			abb.cantidad--
-			return nil, valor
-		} else if nodo.izquierdo == nil && nodo.derecho != nil {
-			abb.cantidad--
-			return nodo.derecho, valor
-		} else if nodo.izquierdo != nil && nodo.derecho == nil {
-			abb.cantidad--
-			return nodo.izquierdo, valor
+	valor := nodo.dato
+	abb.cantidad--
+	var reemplazo *NodoAbb[K, V]
+	if nodo.izquierdo == nil && nodo.derecho == nil {
+		reemplazo = nil
+	} else if nodo.izquierdo == nil || nodo.derecho == nil {
+		if nodo.izquierdo != nil {
+			reemplazo = nodo.izquierdo
+		} else {
+			reemplazo = nodo.derecho
 		}
-
-		siguienteInorder := abb.buscarSiguiente(nodo.derecho)
-		nodo.clave = siguienteInorder.clave
-		nodo.dato = siguienteInorder.dato
-		nodo.derecho, _ = abb.borrarRec(nodo.derecho, siguienteInorder.clave)
+	} else {
+		siguiente := abb.buscarSiguiente(nodo.derecho)
+		abb.cantidad++
+		abb.Borrar(siguiente.clave)
+		nodo.clave = siguiente.clave
+		nodo.dato = siguiente.dato
+		return valor
 	}
-	return nodo, valor
+	if padre == nil {
+		abb.raiz = reemplazo
+	} else if padre.izquierdo == nodo {
+		padre.izquierdo = reemplazo
+	} else {
+		padre.derecho = reemplazo
+	}
+	return valor
 }
 
 func (abb *Abb[K, V]) buscarSiguiente(nodo *NodoAbb[K, V]) *NodoAbb[K, V] {
-	for nodo.izquierdo != nil {
-		nodo = nodo.izquierdo
+	if nodo == nil || nodo.izquierdo == nil {
+		return nodo
 	}
-	return nodo
+	return abb.buscarSiguiente(nodo.izquierdo)
 }
 
 func (abb *Abb[K, V]) Cantidad() int {

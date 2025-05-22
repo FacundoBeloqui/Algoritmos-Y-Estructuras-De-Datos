@@ -35,7 +35,7 @@ func crearNodo[K comparable, V any](clave K, dato V) *NodoAbb[K, V] {
 }
 
 func (abb *Abb[K, V]) Guardar(clave K, dato V) {
-	nodo, padre := abb.buscarConPadre(abb.raiz, clave)
+	nodo, padre := abb.buscarConPadre(abb.raiz, clave, nil)
 	if nodo != nil {
 		nodo.dato = dato
 		return
@@ -50,11 +50,7 @@ func (abb *Abb[K, V]) Guardar(clave K, dato V) {
 	}
 }
 
-func (abb *Abb[K, V]) buscarConPadre(nodo *NodoAbb[K, V], clave K) (actual *NodoAbb[K, V], padre *NodoAbb[K, V]) {
-	return abb.buscarConPadreRec(nodo, clave, nil)
-}
-
-func (abb *Abb[K, V]) buscarConPadreRec(nodo *NodoAbb[K, V], clave K, padre *NodoAbb[K, V]) (*NodoAbb[K, V], *NodoAbb[K, V]) {
+func (abb *Abb[K, V]) buscarConPadre(nodo *NodoAbb[K, V], clave K, padre *NodoAbb[K, V]) (*NodoAbb[K, V], *NodoAbb[K, V]) {
 	if nodo == nil {
 		return nil, padre
 	}
@@ -63,19 +59,19 @@ func (abb *Abb[K, V]) buscarConPadreRec(nodo *NodoAbb[K, V], clave K, padre *Nod
 	if cmp == 0 {
 		return nodo, padre
 	} else if cmp < 0 {
-		return abb.buscarConPadreRec(nodo.izquierdo, clave, nodo)
+		return abb.buscarConPadre(nodo.izquierdo, clave, nodo)
 	} else {
-		return abb.buscarConPadreRec(nodo.derecho, clave, nodo)
+		return abb.buscarConPadre(nodo.derecho, clave, nodo)
 	}
 }
 
 func (abb *Abb[K, V]) Pertenece(clave K) bool {
-	nodo, _ := abb.buscarConPadre(abb.raiz, clave)
+	nodo, _ := abb.buscarConPadre(abb.raiz, clave, nil)
 	return nodo != nil
 }
 
 func (abb *Abb[K, V]) Obtener(clave K) V {
-	nodo, _ := abb.buscarConPadre(abb.raiz, clave)
+	nodo, _ := abb.buscarConPadre(abb.raiz, clave, nil)
 	if nodo == nil {
 		panic("La clave no pertenece al diccionario")
 	}
@@ -83,7 +79,7 @@ func (abb *Abb[K, V]) Obtener(clave K) V {
 }
 
 func (abb *Abb[K, V]) Borrar(clave K) V {
-	nodo, padre := abb.buscarConPadre(abb.raiz, clave)
+	nodo, padre := abb.buscarConPadre(abb.raiz, clave, nil)
 	if nodo == nil {
 		panic("La clave no pertenece al diccionario")
 	}

@@ -40,17 +40,19 @@ func (heap *colaConPrioridad[T]) EstaVacia() bool {
 func (heap *colaConPrioridad[T]) Encolar(elemento T) {
 	heap.datos = append(heap.datos, elemento)
 	heap.cant++
-	upheap(heap.datos, heap.cant, heap.cmp)
+	upheap(heap.datos, heap.cant-1, heap.cmp)
 }
 
 func upheap[T any](datos []T, cantidad int, funcion_cmp func(T, T) int) {
 	posicionHijo := cantidad
-	posicionPadre := calcularPosicionPadre(posicionHijo)
-	padre := datos[posicionPadre]
-	hijo := datos[posicionHijo]
-	for funcion_cmp(hijo, padre) > 0 || posicionHijo != 0 {
-		posicionHijo = posicionPadre
-		posicionPadre = calcularPosicionPadre(posicionHijo)
+	for posicionHijo > 0{
+		posicionPadre := calcularPosicionPadre(posicionHijo)
+		padre := datos[posicionPadre]
+		hijo := datos[posicionHijo]
+		for funcion_cmp(hijo, padre) > 0{
+			posicionHijo = posicionPadre
+			posicionPadre = calcularPosicionPadre(posicionHijo)
+		}
 	}
 }
 

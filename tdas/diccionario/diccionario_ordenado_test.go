@@ -2,21 +2,16 @@ package diccionario_test
 
 import (
 	"fmt"
+	"github.com/stretchr/testify/require"
 	"strings"
 	TDADiccionario "tdas/diccionario"
 	"testing"
-	"github.com/stretchr/testify/require"
 )
 
 var TAMS_VOLUMEN_ABB = []int{12500, 25000, 50000, 100000, 200000, 400000}
 
 var cmpInt = func(a, b int) int {
-	if a < b {
-		return -1
-	} else if a > b {
-		return 1
-	}
-	return 0
+	return a - b
 }
 
 func TestAbbVacio(t *testing.T) {
@@ -367,9 +362,9 @@ func TestAbbBorrarRaiz(t *testing.T) {
 	require.Equal(t, esperado, claves)
 }
 
-func TestAbbIteradorExterno(t *testing.T){
+func TestAbbIteradorExterno(t *testing.T) {
 	abb := TDADiccionario.CrearABB[int, string](cmpInt)
-	
+
 	claves := []int{25, 10, 32, 14, 2, 1}
 	valores := []string{"A", "B", "C", "D", "E", "F"}
 	abb.Guardar(claves[0], valores[0])
@@ -381,20 +376,18 @@ func TestAbbIteradorExterno(t *testing.T){
 
 	clavesEsperadas := []int{1, 2, 10, 14, 25, 32}
 	valoresEsperados := []string{"F", "E", "B", "D", "A", "C"}
-	
+
 	iter := abb.Iterador()
 
-	
-	for i:= 0; iter.HaySiguiente(); i++{
+	for i := 0; iter.HaySiguiente(); i++ {
 		clave, valor := iter.VerActual()
 		require.Equal(t, clavesEsperadas[i], clave)
 		require.Equal(t, valoresEsperados[i], valor)
 		require.True(t, iter.HaySiguiente())
 		iter.Siguiente()
 	}
-	
-	require.PanicsWithValue(t, "El iterador termino de iterar", func () {iter.Siguiente()})
-	require.PanicsWithValue(t, "El iterador termino de iterar", func () {iter.VerActual()})
 
+	require.PanicsWithValue(t, "El iterador termino de iterar", func() { iter.Siguiente() })
+	require.PanicsWithValue(t, "El iterador termino de iterar", func() { iter.VerActual() })
 
 }

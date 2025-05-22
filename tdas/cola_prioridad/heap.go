@@ -47,11 +47,11 @@ func upheap[T any](datos []T, cantidad int, funcion_cmp func(T, T) int) {
 	posicionHijo := cantidad
 	for posicionHijo > 0{
 		posicionPadre := calcularPosicionPadre(posicionHijo)
-		padre := datos[posicionPadre]
-		hijo := datos[posicionHijo]
-		for funcion_cmp(hijo, padre) > 0{
+		if funcion_cmp(datos[posicionHijo], datos[posicionPadre]) > 0{
+			datos[posicionHijo], datos[posicionPadre] = datos[posicionPadre], datos[posicionHijo]
 			posicionHijo = posicionPadre
-			posicionPadre = calcularPosicionPadre(posicionHijo)
+		} else{
+			break
 		}
 	}
 }

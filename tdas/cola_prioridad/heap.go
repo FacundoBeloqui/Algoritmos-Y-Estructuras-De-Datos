@@ -20,15 +20,24 @@ func CrearHeap[T any](funcion_cmp func(T, T) int) ColaPrioridad[T] {
 }
 
 func CrearHeapArr[T any](arreglo []T, funcion_cmp func(T, T) int) ColaPrioridad[T] {
-	arr := make([]T, len(arreglo))
-	copy(arr, arreglo)
-	heap := &colaConPrioridad[T]{
-		datos: arr,
-		cant:  len(arr),
-		cmp:   funcion_cmp,
+	if len(arreglo) == 0 {
+		heap := &colaConPrioridad[T]{
+			datos: make([]T, CAPACIDAD_INICIAL),
+			cant:  0,
+			cmp:   funcion_cmp,
+		}
+		return heap
+	} else {
+		arr := make([]T, len(arreglo))
+		copy(arr, arreglo)
+		heap := &colaConPrioridad[T]{
+			datos: arr,
+			cant:  len(arr),
+			cmp:   funcion_cmp,
+		}
+		heapify(arr, len(arr), funcion_cmp)
+		return heap
 	}
-	heapify(arr, len(arr), funcion_cmp)
-	return heap
 }
 
 func calcularPosicionHijoIzquierdo(posicion int) int {

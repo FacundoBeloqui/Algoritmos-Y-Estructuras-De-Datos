@@ -1,7 +1,8 @@
 package cola_prioridad
 
+const CAPACIDAD_INICIAL = 1
 const FACTOR_REDUCCION = 4
-const MULTIPLO_REDUCCION = 2
+const MULTIPLO_CRECIMIENTO = 2
 const RAIZ = 0
 
 type colaConPrioridad[T any] struct {
@@ -12,22 +13,31 @@ type colaConPrioridad[T any] struct {
 
 func CrearHeap[T any](funcion_cmp func(T, T) int) ColaPrioridad[T] {
 	return &colaConPrioridad[T]{
-		datos: make([]T, 0),
+		datos: make([]T, CAPACIDAD_INICIAL),
 		cant:  0,
 		cmp:   funcion_cmp,
 	}
 }
 
 func CrearHeapArr[T any](arreglo []T, funcion_cmp func(T, T) int) ColaPrioridad[T] {
-	arr := make([]T, len(arreglo))
-	copy(arr, arreglo)
-	heap := &colaConPrioridad[T]{
-		datos: arr,
-		cant:  len(arr),
-		cmp:   funcion_cmp,
+	if len(arreglo) == 0 {
+		heap := &colaConPrioridad[T]{
+			datos: make([]T, CAPACIDAD_INICIAL),
+			cant:  0,
+			cmp:   funcion_cmp,
+		}
+		return heap
+	} else {
+		arr := make([]T, len(arreglo))
+		copy(arr, arreglo)
+		heap := &colaConPrioridad[T]{
+			datos: arr,
+			cant:  len(arr),
+			cmp:   funcion_cmp,
+		}
+		heapify(arr, len(arr), funcion_cmp)
+		return heap
 	}
-	heapify(arr, len(arr), funcion_cmp)
-	return heap
 }
 
 func calcularPosicionHijoIzquierdo(posicion int) int {
@@ -44,13 +54,15 @@ func (heap *colaConPrioridad[T]) EstaVacia() bool {
 }
 
 func (heap *colaConPrioridad[T]) Encolar(elemento T) {
-	heap.datos = append(heap.datos, elemento)
+	if heap.cant == len(heap.datos) {
+		redimension(heap, len(heap.datos)*MULTIPLO_CRECIMIENTO)
+	}
+	heap.datos[heap.cant] = elemento
 	heap.cant++
 	upheap(heap.datos, heap.cant-1, heap.cmp)
 }
 
-func upheap[T any](datos []T, cantidad int, funcion_cmp func(T, T) int) {
-	posicionHijo := cantidad
+func upheap[T any](datos []T, posicionHijo int, funcion_cmp func(T, T) int) {
 	for posicionHijo > RAIZ {
 		posicionPadre := calcularPosicionPadre(posicionHijo)
 		if funcion_cmp(datos[posicionHijo], datos[posicionPadre]) > 0 {
@@ -69,12 +81,14 @@ func (heap *colaConPrioridad[T]) VerMax() T {
 
 func (heap *colaConPrioridad[T]) Desencolar() T {
 	heap.verifcarColaVacia()
-	heap.datos[RAIZ], heap.datos[heap.cant-1] = heap.datos[heap.cant-1], heap.datos[RAIZ]
-	dato := heap.datos[heap.cant-1]
-	if heap.cant*FACTOR_REDUCCION <= len(heap.datos) {
-		redimension(heap, len(heap.datos)/MULTIPLO_REDUCCION)
-	}
+	dato := heap.datos[RAIZ]
 	heap.cant--
+	heap.datos[RAIZ], heap.datos[heap.cant] = heap.datos[heap.cant], heap.datos[RAIZ]
+	var cero T
+	heap.datos[heap.cant] = cero
+	if heap.cant*FACTOR_REDUCCION <= len(heap.datos) {
+		redimension(heap, len(heap.datos)/MULTIPLO_CRECIMIENTO)
+	}
 	downheap(heap.datos, heap.cant, RAIZ, heap.cmp)
 	return dato
 }

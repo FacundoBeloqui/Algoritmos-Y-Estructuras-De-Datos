@@ -2,7 +2,7 @@ package diccionario_test
 
 import (
 	"github.com/stretchr/testify/require"
-	"math/rand/v2"
+	"math/rand"
 	"strings"
 	TDADiccionario "tdas/diccionario"
 	"testing"
@@ -281,14 +281,14 @@ func TestIteradorInternoConRango(t *testing.T) {
 	}
 
 	desde, hasta := 30, 70
-	var esperado []int
+	var obtenido []int
 
 	abb.IterarRango(&desde, &hasta, func(clave, valor int) bool {
-		esperado = append(esperado, clave)
+		obtenido = append(obtenido, clave)
 		return true
 	})
 
-	require.Equal(t, []int{30, 40, 50, 60, 70}, esperado)
+	require.Equal(t, []int{30, 40, 50, 60, 70}, obtenido)
 }
 
 func TestIteradorInternoConCondicionDeCorte(t *testing.T) {
@@ -299,14 +299,14 @@ func TestIteradorInternoConCondicionDeCorte(t *testing.T) {
 	}
 
 	desde, hasta := 30, 70
-	var esperado []int
+	var obtenido []int
 
 	abb.IterarRango(&desde, &hasta, func(clave, valor int) bool {
-		esperado = append(esperado, clave)
+		obtenido = append(obtenido, clave)
 		return clave < 50
 	})
 
-	require.Equal(t, []int{30, 40, 50}, esperado)
+	require.Equal(t, []int{30, 40, 50}, obtenido)
 }
 
 func TestIteradorRango1(t *testing.T) {
@@ -331,8 +331,8 @@ func TestIteradorRango1(t *testing.T) {
 		iter.Siguiente()
 	}
 
-	esperado := []int{7, 10, 12, 15}
-	require.Equal(t, esperado, claves)
+	obtenido := []int{7, 10, 12, 15}
+	require.Equal(t, obtenido, claves)
 }
 
 func TestIteradorRango2(t *testing.T) {
@@ -355,8 +355,8 @@ func TestIteradorRango2(t *testing.T) {
 		iter.Siguiente()
 	}
 
-	esperado := []int{3, 5, 7, 10, 12, 15, 18}
-	require.Equal(t, esperado, claves)
+	obtenido := []int{3, 5, 7, 10, 12, 15, 18}
+	require.Equal(t, obtenido, claves)
 }
 
 func TestIteradorRango3(t *testing.T) {
@@ -380,8 +380,8 @@ func TestIteradorRango3(t *testing.T) {
 		iter.Siguiente()
 	}
 
-	esperado := []int{12, 15, 18}
-	require.Equal(t, esperado, claves)
+	obtenido := []int{12, 15, 18}
+	require.Equal(t, obtenido, claves)
 }
 
 func TestIteradorRango4(t *testing.T) {
@@ -463,23 +463,33 @@ func TestAbbIteradorExterno(t *testing.T) {
 	require.PanicsWithValue(t, "El iterador termino de iterar", func() { iter.VerActual() })
 
 }
-func randRange(min, max int) int {
-	return rand.IntN(max+1-min) + min
-}
 
 func TestAbbVolumen(t *testing.T) {
 	abb := TDADiccionario.CrearABB[int, int](cmpInt)
 	const maximo = 1000000
-	const minimo = 0
-
-	for abb.Cantidad() != maximo {
-		clave := randRange(minimo, maximo)
-		if !abb.Pertenece(clave) {
-			abb.Guardar(clave, clave)
-		}
+	arr := make([]int, maximo)
+	for i := 0; i < maximo; i++ {
+		arr[i] = i
 	}
-	for iter := abb.Iterador(); iter.HaySiguiente(); iter.Siguiente() {
-		clave, _ := iter.VerActual()
-		abb.Borrar(clave)
+	desordenar(arr)
+	for _, elem := range arr {
+		if !abb.Pertenece(elem) {
+			abb.Guardar(elem, elem)
+		}
+		require.True(t, abb.Pertenece(elem))
+
+	}
+	require.EqualValues(t, maximo, abb.Cantidad())
+
+	for i := 0; i < maximo; i++ {
+		require.EqualValues(t, i, abb.Borrar(i))
+		require.EqualValues(t, maximo-i-1, abb.Cantidad())
+	}
+}
+func desordenar[T any](arr []T) {
+	n := len(arr)
+	for i := n - 1; i >= 0; i-- {
+		j := rand.Intn(i + 1)
+		arr[i], arr[j] = arr[j], arr[i]
 	}
 }

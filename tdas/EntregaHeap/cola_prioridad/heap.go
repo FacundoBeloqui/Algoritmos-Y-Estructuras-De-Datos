@@ -1,5 +1,9 @@
 package cola_prioridad
 
+const FACTOR_REDUCCION = 4
+const MULTIPLO_REDUCCION = 2
+const RAIZ = 0
+
 type colaConPrioridad[T any] struct {
 	datos []T
 	cant  int
@@ -47,7 +51,7 @@ func (heap *colaConPrioridad[T]) Encolar(elemento T) {
 
 func upheap[T any](datos []T, cantidad int, funcion_cmp func(T, T) int) {
 	posicionHijo := cantidad
-	for posicionHijo > 0 {
+	for posicionHijo > RAIZ {
 		posicionPadre := calcularPosicionPadre(posicionHijo)
 		if funcion_cmp(datos[posicionHijo], datos[posicionPadre]) > 0 {
 			datos[posicionHijo], datos[posicionPadre] = datos[posicionPadre], datos[posicionHijo]
@@ -60,19 +64,25 @@ func upheap[T any](datos []T, cantidad int, funcion_cmp func(T, T) int) {
 
 func (heap *colaConPrioridad[T]) VerMax() T {
 	heap.verifcarColaVacia()
-	return heap.datos[0]
+	return heap.datos[RAIZ]
 }
 
 func (heap *colaConPrioridad[T]) Desencolar() T {
 	heap.verifcarColaVacia()
-	dato := heap.datos[0]
+	heap.datos[RAIZ], heap.datos[heap.cant-1] = heap.datos[heap.cant-1], heap.datos[RAIZ]
+	dato := heap.datos[heap.cant-1]
+	if heap.cant*FACTOR_REDUCCION <= len(heap.datos) {
+		redimension(heap, len(heap.datos)/MULTIPLO_REDUCCION)
+	}
 	heap.cant--
-	heap.datos[0] = heap.datos[heap.cant]
-	heap.datos = heap.datos[:heap.cant]
-	downheap(heap.datos, heap.cant, 0, heap.cmp)
+	downheap(heap.datos, heap.cant, RAIZ, heap.cmp)
 	return dato
 }
-
+func redimension[T any](heap *colaConPrioridad[T], nuevaCapacidad int) {
+	nuevosDatos := make([]T, nuevaCapacidad)
+	copy(nuevosDatos, heap.datos)
+	heap.datos = nuevosDatos
+}
 func downheap[T any](datos []T, cantidad int, posicion int, funcion_cmp func(T, T) int) {
 	for posicion < cantidad {
 		hijoIzquierdo := calcularPosicionHijoIzquierdo(posicion)

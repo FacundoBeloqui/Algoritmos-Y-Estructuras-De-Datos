@@ -1,7 +1,9 @@
 package cola_prioridad
 
+const CAPACIDAD_INICIAL = 4
 const FACTOR_REDUCCION = 4
 const MULTIPLO_REDUCCION = 2
+const RAIZ = 0
 
 type colaConPrioridad[T any] struct {
 	datos []T
@@ -11,7 +13,7 @@ type colaConPrioridad[T any] struct {
 
 func CrearHeap[T any](funcion_cmp func(T, T) int) ColaPrioridad[T] {
 	return &colaConPrioridad[T]{
-		datos: make([]T, 0),
+		datos: make([]T, 4),
 		cant:  0,
 		cmp:   funcion_cmp,
 	}
@@ -50,7 +52,7 @@ func (heap *colaConPrioridad[T]) Encolar(elemento T) {
 
 func upheap[T any](datos []T, cantidad int, funcion_cmp func(T, T) int) {
 	posicionHijo := cantidad
-	for posicionHijo > 0 {
+	for posicionHijo > RAIZ {
 		posicionPadre := calcularPosicionPadre(posicionHijo)
 		if funcion_cmp(datos[posicionHijo], datos[posicionPadre]) > 0 {
 			datos[posicionHijo], datos[posicionPadre] = datos[posicionPadre], datos[posicionHijo]
@@ -63,23 +65,25 @@ func upheap[T any](datos []T, cantidad int, funcion_cmp func(T, T) int) {
 
 func (heap *colaConPrioridad[T]) VerMax() T {
 	heap.verifcarColaVacia()
-	return heap.datos[0]
+	return heap.datos[RAIZ]
 }
 
 func (heap *colaConPrioridad[T]) Desencolar() T {
 	heap.verifcarColaVacia()
-	dato := heap.datos[0]
+	dato := heap.datos[RAIZ]
 	heap.cant--
-	heap.datos[0] = heap.datos[heap.cant]
-	downheap(heap.datos, heap.cant, 0, heap.cmp)
-	if heap.cant <= len(heap.datos)/FACTOR_REDUCCION {
-		redimension(heap, len(heap.datos)/MULTIPLO_REDUCCION)
+	heap.datos[RAIZ], heap.datos[heap.cant] = heap.datos[heap.cant], heap.datos[RAIZ]
+	if heap.cant*FACTOR_REDUCCION <= len(heap.datos) && len(heap.datos) > CAPACIDAD_INICIAL {
+		redimension(heap, len(heap.datos)/MULTIPLO_REDUCCION, heap.cant)
 	}
+	downheap(heap.datos, heap.cant, RAIZ, heap.cmp)
 	return dato
 }
-func redimension[T any](heap *colaConPrioridad[T], nuevaCapacidad int) {
+func redimension[T any](heap *colaConPrioridad[T], nuevaCapacidad int, cantidad int) {
 	nuevosDatos := make([]T, nuevaCapacidad)
-	copy(nuevosDatos, heap.datos)
+	for i := 0; i < cantidad; i++ {
+		nuevosDatos[i] = heap.datos[i]
+	}
 	heap.datos = nuevosDatos
 }
 func downheap[T any](datos []T, cantidad int, posicion int, funcion_cmp func(T, T) int) {

@@ -12,15 +12,15 @@ var cmpInt = func(a, b int) int {
 	return a - b
 }
 
-func TestColaPrioridadVacia(t *testing.T){
+func TestColaPrioridadVacia(t *testing.T) {
 	heap := TDAColaPrioridad.CrearHeap(cmpInt)
 	require.True(t, heap.EstaVacia())
 	require.PanicsWithValue(t, "La cola esta vacia", func() { heap.VerMax() })
 	require.PanicsWithValue(t, "La cola esta vacia", func() { heap.Desencolar() })
-	require.EqualValues(t,0, heap.Cantidad())
+	require.EqualValues(t, 0, heap.Cantidad())
 }
 
-func TestUnElemento(t *testing.T){
+func TestUnElemento(t *testing.T) {
 	heap := TDAColaPrioridad.CrearHeap(cmpInt)
 	heap.Encolar(5)
 	require.EqualValues(t, 1, heap.Cantidad())
@@ -30,27 +30,25 @@ func TestUnElemento(t *testing.T){
 	require.True(t, heap.EstaVacia())
 	require.PanicsWithValue(t, "La cola esta vacia", func() { heap.VerMax() })
 	require.PanicsWithValue(t, "La cola esta vacia", func() { heap.Desencolar() })
-	require.EqualValues(t,0, heap.Cantidad())
+	require.EqualValues(t, 0, heap.Cantidad())
 }
 
-func TestEsMaxHeap(t *testing.T){
+func TestEsMaxHeap(t *testing.T) {
 	heap := TDAColaPrioridad.CrearHeap(cmpInt)
 	arr := []int{9, 3, 5, 1, 6, 4, 5, 10, 21}
-	
+
 	for _, elem := range arr {
 		heap.Encolar(elem)
 	}
-	//verifico que siempre salga un numero menor al actual y de esta forma me aseguro que el maximo siempre esta arriba
 	anterior := heap.Desencolar()
-	for !heap.EstaVacia(){
+	for !heap.EstaVacia() {
 		actual := heap.Desencolar()
 		require.LessOrEqual(t, actual, anterior)
 		anterior = actual
 	}
 }
 
-
-func TestEncolarYDesencolarStrings(t *testing.T){
+func TestEncolarYDesencolarStrings(t *testing.T) {
 	heap := TDAColaPrioridad.CrearHeap(strings.Compare)
 	arr := []string{"A", "P", "C", "U", "Y"}
 
@@ -62,7 +60,7 @@ func TestEncolarYDesencolarStrings(t *testing.T){
 	heap.Encolar(arr[1])
 	require.EqualValues(t, 2, heap.Cantidad())
 	require.EqualValues(t, "P", heap.VerMax())
-	
+
 	heap.Encolar(arr[2])
 	require.EqualValues(t, 3, heap.Cantidad())
 	require.EqualValues(t, "P", heap.VerMax())
@@ -88,7 +86,7 @@ func TestEncolarYDesencolarStrings(t *testing.T){
 	require.True(t, heap.EstaVacia())
 	require.PanicsWithValue(t, "La cola esta vacia", func() { heap.VerMax() })
 	require.PanicsWithValue(t, "La cola esta vacia", func() { heap.Desencolar() })
-	require.EqualValues(t,0, heap.Cantidad())
+	require.EqualValues(t, 0, heap.Cantidad())
 }
 
 func TestEncolarYDesencolarEnteros(t *testing.T) {
@@ -170,12 +168,10 @@ func TestRepetidos(t *testing.T) {
 	require.True(t, heap.EstaVacia())
 }
 
-
-
-func TestHeapify(t *testing.T){
+func TestHeapify(t *testing.T) {
 	arr := []int{5, 1, 7, 2, 3, 6, 4, 8}
 	heap := TDAColaPrioridad.CrearHeapArr(arr, cmpInt)
-	
+
 	require.EqualValues(t, 8, heap.VerMax())
 	require.EqualValues(t, 8, heap.VerMax())
 
@@ -185,7 +181,7 @@ func TestHeapify(t *testing.T){
 }
 
 func TestCrearArregloVacio(t *testing.T) {
-	arr := []int{}
+	var arr []int
 	heap := TDAColaPrioridad.CrearHeapArr(arr, cmpInt)
 
 	require.True(t, heap.EstaVacia())
@@ -194,16 +190,16 @@ func TestCrearArregloVacio(t *testing.T) {
 	require.PanicsWithValue(t, "La cola esta vacia", func() { heap.Desencolar() })
 }
 
-func TestHeapSort(t *testing.T){
-	arr := []int{5, 8, 1, 7, 20 ,14, 24, 2}
+func TestHeapSort(t *testing.T) {
+	arr := []int{5, 8, 1, 7, 20, 14, 24, 2}
 	TDAColaPrioridad.HeapSort(arr, cmpInt)
 	esperado := []int{1, 2, 5, 7, 8, 14, 20, 24}
 	require.Equal(t, esperado, arr)
 }
 
-func TestVolumen(t *testing.T){
+func TestVolumen(t *testing.T) {
 	heap := TDAColaPrioridad.CrearHeap(cmpInt)
-	n := 1000000
+	const n = 1000000
 
 	for i := range n {
 		heap.Encolar(i)
@@ -211,7 +207,7 @@ func TestVolumen(t *testing.T){
 	}
 
 	anterior := heap.Desencolar()
-	for !heap.EstaVacia(){
+	for !heap.EstaVacia() {
 		actual := heap.Desencolar()
 		require.LessOrEqual(t, actual, anterior)
 		anterior = actual

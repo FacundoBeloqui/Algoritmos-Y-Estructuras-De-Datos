@@ -2,31 +2,31 @@ package diccionario
 
 import TDAPila "tdas/pila"
 
-type NodoAbb[K comparable, V any] struct {
-	izquierdo *NodoAbb[K, V]
-	derecho   *NodoAbb[K, V]
+type nodoAbb[K comparable, V any] struct {
+	izquierdo *nodoAbb[K, V]
+	derecho   *nodoAbb[K, V]
 	clave     K
 	dato      V
 }
 
 type funcCmp[K comparable] func(K, K) int
 
-type Abb[K comparable, V any] struct {
-	raiz     *NodoAbb[K, V]
+type abb[K comparable, V any] struct {
+	raiz     *nodoAbb[K, V]
 	cantidad int
 	cmp      funcCmp[K]
 }
 
 func CrearABB[K comparable, V any](funcion_cmp func(K, K) int) DiccionarioOrdenado[K, V] {
-	return &Abb[K, V]{
+	return &abb[K, V]{
 		nil,
 		0,
 		funcion_cmp,
 	}
 }
 
-func crearNodo[K comparable, V any](clave K, dato V) *NodoAbb[K, V] {
-	return &NodoAbb[K, V]{
+func crearNodo[K comparable, V any](clave K, dato V) *nodoAbb[K, V] {
+	return &nodoAbb[K, V]{
 		nil,
 		nil,
 		clave,
@@ -34,7 +34,7 @@ func crearNodo[K comparable, V any](clave K, dato V) *NodoAbb[K, V] {
 	}
 }
 
-func (abb *Abb[K, V]) Guardar(clave K, dato V) {
+func (abb *abb[K, V]) Guardar(clave K, dato V) {
 	nodo, padre := abb.buscarConPadre(abb.raiz, clave, nil)
 	if nodo != nil {
 		nodo.dato = dato
@@ -50,7 +50,7 @@ func (abb *Abb[K, V]) Guardar(clave K, dato V) {
 	}
 }
 
-func (abb *Abb[K, V]) buscarConPadre(nodo *NodoAbb[K, V], clave K, padre *NodoAbb[K, V]) (*NodoAbb[K, V], *NodoAbb[K, V]) {
+func (abb *abb[K, V]) buscarConPadre(nodo *nodoAbb[K, V], clave K, padre *nodoAbb[K, V]) (*nodoAbb[K, V], *nodoAbb[K, V]) {
 	if nodo == nil {
 		return nil, padre
 	}
@@ -65,12 +65,12 @@ func (abb *Abb[K, V]) buscarConPadre(nodo *NodoAbb[K, V], clave K, padre *NodoAb
 	}
 }
 
-func (abb *Abb[K, V]) Pertenece(clave K) bool {
+func (abb *abb[K, V]) Pertenece(clave K) bool {
 	nodo, _ := abb.buscarConPadre(abb.raiz, clave, nil)
 	return nodo != nil
 }
 
-func (abb *Abb[K, V]) Obtener(clave K) V {
+func (abb *abb[K, V]) Obtener(clave K) V {
 	nodo, _ := abb.buscarConPadre(abb.raiz, clave, nil)
 	if nodo == nil {
 		panic("La clave no pertenece al diccionario")
@@ -78,14 +78,14 @@ func (abb *Abb[K, V]) Obtener(clave K) V {
 	return nodo.dato
 }
 
-func (abb *Abb[K, V]) Borrar(clave K) V {
+func (abb *abb[K, V]) Borrar(clave K) V {
 	nodo, padre := abb.buscarConPadre(abb.raiz, clave, nil)
 	if nodo == nil {
 		panic("La clave no pertenece al diccionario")
 	}
 	valor := nodo.dato
 	abb.cantidad--
-	var reemplazo *NodoAbb[K, V]
+	var reemplazo *nodoAbb[K, V]
 	if nodo.izquierdo == nil && nodo.derecho == nil {
 		reemplazo = nil
 	} else if nodo.izquierdo == nil || nodo.derecho == nil {
@@ -112,28 +112,28 @@ func (abb *Abb[K, V]) Borrar(clave K) V {
 	return valor
 }
 
-func (abb *Abb[K, V]) buscarSiguiente(nodo *NodoAbb[K, V]) *NodoAbb[K, V] {
+func (abb *abb[K, V]) buscarSiguiente(nodo *nodoAbb[K, V]) *nodoAbb[K, V] {
 	if nodo == nil || nodo.izquierdo == nil {
 		return nodo
 	}
 	return abb.buscarSiguiente(nodo.izquierdo)
 }
 
-func (abb *Abb[K, V]) Cantidad() int {
+func (abb *abb[K, V]) Cantidad() int {
 	return abb.cantidad
 }
 
 //<----------- ITERADOR INTERNO ----------->
 
-func (abb *Abb[K, V]) Iterar(f func(clave K, dato V) bool) {
+func (abb *abb[K, V]) Iterar(f func(clave K, dato V) bool) {
 	abb.IterarRango(nil, nil, f)
 }
 
-func (abb *Abb[K, V]) IterarRango(desde *K, hasta *K, visitar func(clave K, dato V) bool) {
+func (abb *abb[K, V]) IterarRango(desde *K, hasta *K, visitar func(clave K, dato V) bool) {
 	abb.raiz.iterarRango(desde, hasta, visitar, abb.cmp)
 }
 
-func (nodo *NodoAbb[K, V]) iterarRango(desde *K, hasta *K, visitar func(clave K, dato V) bool, funcCmp func(K, K) int) bool {
+func (nodo *nodoAbb[K, V]) iterarRango(desde *K, hasta *K, visitar func(clave K, dato V) bool, funcCmp func(K, K) int) bool {
 	if nodo == nil {
 		return true
 	}
@@ -161,19 +161,19 @@ func (nodo *NodoAbb[K, V]) iterarRango(desde *K, hasta *K, visitar func(clave K,
 //<----------- ITERADOR EXTERNO ----------->
 
 type iterAbb[K comparable, V any] struct {
-	pila  TDAPila.Pila[NodoAbb[K, V]]
+	pila  TDAPila.Pila[nodoAbb[K, V]]
 	cmp   funcCmp[K]
 	desde *K
 	hasta *K
 }
 
-func (abb *Abb[K, V]) Iterador() IterDiccionario[K, V] {
+func (abb *abb[K, V]) Iterador() IterDiccionario[K, V] {
 	return abb.IteradorRango(nil, nil)
 }
 
-func (abb *Abb[K, V]) IteradorRango(desde *K, hasta *K) IterDiccionario[K, V] {
+func (abb *abb[K, V]) IteradorRango(desde *K, hasta *K) IterDiccionario[K, V] {
 	iter := &iterAbb[K, V]{
-		pila:  TDAPila.CrearPilaDinamica[NodoAbb[K, V]](),
+		pila:  TDAPila.CrearPilaDinamica[nodoAbb[K, V]](),
 		cmp:   abb.cmp,
 		desde: desde,
 		hasta: hasta,
@@ -201,7 +201,7 @@ func (iter *iterAbb[K, V]) Siguiente() {
 	iter.apilarDesdeHasta(nodo.derecho)
 }
 
-func (iter *iterAbb[K, V]) apilarDesdeHasta(nodo *NodoAbb[K, V]) {
+func (iter *iterAbb[K, V]) apilarDesdeHasta(nodo *nodoAbb[K, V]) {
 	for nodo != nil {
 		if iter.desde != nil && iter.cmp(nodo.clave, *iter.desde) < 0 {
 			nodo = nodo.derecho

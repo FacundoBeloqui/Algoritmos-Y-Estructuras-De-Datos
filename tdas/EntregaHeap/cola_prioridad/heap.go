@@ -1,8 +1,5 @@
 package cola_prioridad
 
-const FACTOR_REDUCCION = 4
-const MULTIPLO_REDUCCION = 2
-
 type colaConPrioridad[T any] struct {
 	datos []T
 	cant  int
@@ -71,17 +68,11 @@ func (heap *colaConPrioridad[T]) Desencolar() T {
 	dato := heap.datos[0]
 	heap.cant--
 	heap.datos[0] = heap.datos[heap.cant]
+	heap.datos = heap.datos[:heap.cant]
 	downheap(heap.datos, heap.cant, 0, heap.cmp)
-	if heap.cant <= len(heap.datos)/FACTOR_REDUCCION {
-		redimension(heap, len(heap.datos)/MULTIPLO_REDUCCION)
-	}
 	return dato
 }
-func redimension[T any](heap *colaConPrioridad[T], nuevaCapacidad int) {
-	nuevosDatos := make([]T, nuevaCapacidad)
-	copy(nuevosDatos, heap.datos)
-	heap.datos = nuevosDatos
-}
+
 func downheap[T any](datos []T, cantidad int, posicion int, funcion_cmp func(T, T) int) {
 	for posicion < cantidad {
 		hijoIzquierdo := calcularPosicionHijoIzquierdo(posicion)

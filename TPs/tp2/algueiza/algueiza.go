@@ -55,7 +55,7 @@ func AgregarArchivo(archivo string, diccFechas diccionario.DiccionarioOrdenado[s
 
 func VerTablero(k int, modo string, desde string, hasta string, dicc diccionario.DiccionarioOrdenado[string, VueloImpl]) {
 	if k <= 0 || modo != "asc" && modo != "desc" || hasta < desde {
-		panic("Vuelva a intentarlo")
+		fmt.Print("Vuelva a intentarlo")
 	}
 	pilaAux := pila.CrearPilaDinamica[VueloImpl]()
 	contador := 0
@@ -75,7 +75,7 @@ func VerTablero(k int, modo string, desde string, hasta string, dicc diccionario
 }
 func InfoVuelo(codigo int, diccionario2 diccionario.Diccionario[int, VueloImpl]) {
 	if !diccionario2.Pertenece(codigo) {
-		panic("El codigo no existe")
+		fmt.Print("El codigo no existe")
 	}
 	datos := diccionario2.Obtener(codigo)
 	fmt.Printf("%d %s %s %s %s %d %s %d %d %d\n",
@@ -132,5 +132,17 @@ func SiguienteVuelo(origen, destino, fecha string, dicc diccionario.DiccionarioO
 	}
 	if !encontrado {
 		fmt.Printf("No hay vuelo registrado desde %s hacia %s desde %s", origen, destino, fecha)
+	}
+}
+
+func Borrar(desde, hasta string, dicc diccionario.DiccionarioOrdenado[string, VueloImpl], diccionario2 diccionario.Diccionario[int, VueloImpl]) {
+	if desde > hasta {
+		fmt.Print("desde es mayor a hasta")
+	}
+	for iter := dicc.IteradorRango(&desde, &hasta); iter.HaySiguiente(); iter.Siguiente() {
+		clave, valor := iter.VerActual()
+		InfoVuelo(valor.numeroVuelo, diccionario2)
+		dicc.Borrar(clave)
+		diccionario2.Borrar(valor.numeroVuelo)
 	}
 }

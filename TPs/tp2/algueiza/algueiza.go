@@ -120,3 +120,17 @@ func PrioridadVuelos(k int, diccionario2 diccionario.Diccionario[int, VueloImpl]
 		fmt.Printf("%d - %d\n", elem.prioridad, elem.numeroVuelo)
 	}
 }
+
+func SiguienteVuelo(origen, destino, fecha string, dicc diccionario.DiccionarioOrdenado[string, VueloImpl], diccionario2 diccionario.Diccionario[int, VueloImpl]) {
+	encontrado := false
+	for iter := dicc.IteradorRango(&fecha, nil); iter.HaySiguiente(); iter.Siguiente() {
+		_, valor := iter.VerActual()
+		if valor.destino == destino && valor.origen == origen {
+			encontrado = true
+			InfoVuelo(valor.numeroVuelo, diccionario2)
+		}
+	}
+	if !encontrado {
+		fmt.Printf("No hay vuelo registrado desde %s hacia %s desde %s", origen, destino, fecha)
+	}
+}

@@ -22,4 +22,6 @@ func main() {
 	algueiza.VerTablero(8, "asc", "2018-04-08T10:00:00", "2019-04-21T10:12:00", diccFechas)
 	algueiza.InfoVuelo(1070, diccNumerosVuelo)
 	algueiza.PrioridadVuelos(5, diccNumerosVuelo)
+	algueiza.SiguienteVuelo("LAX", "MIA", "2018-10-28T15:02:01", diccFechas, diccNumerosVuelo)
+
 }

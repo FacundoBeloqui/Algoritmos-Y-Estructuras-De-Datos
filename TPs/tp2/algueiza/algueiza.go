@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"strconv"
+	"tdas/cola_prioridad"
 	"tdas/diccionario"
 	"tdas/pila"
 )
@@ -81,4 +82,41 @@ func InfoVuelo(codigo int, diccionario2 diccionario.Diccionario[int, VueloImpl])
 		datos.numeroVuelo, datos.aerolinea, datos.origen, datos.destino,
 		datos.matricula, datos.prioridad, datos.fecha, datos.atraso, datos.tiempoDeVuelo, datos.cancelado)
 
+}
+func cmp(a, b VueloImpl) int {
+	if a.prioridad > b.prioridad {
+		return 1
+	} else if a.prioridad < b.prioridad {
+		return -1
+	} else {
+		if a.numeroVuelo > b.numeroVuelo {
+			return 1
+		} else if a.numeroVuelo < b.numeroVuelo {
+			return -1
+		}
+	}
+	return 0
+}
+
+func TopK(arr []VueloImpl, k int) []VueloImpl {
+	cp := cola_prioridad.CrearHeapArr(arr, cmp)
+	top := make([]VueloImpl, k)
+
+	for i := 0; i < k; i++ {
+		top[i] = cp.Desencolar()
+	}
+	return top
+}
+func PrioridadVuelos(k int, diccionario2 diccionario.Diccionario[int, VueloImpl]) {
+	miarr := make([]VueloImpl, diccionario2.Cantidad())
+	i := 0
+	for iter := diccionario2.Iterador(); iter.HaySiguiente(); iter.Siguiente() {
+		_, datos := iter.VerActual()
+		miarr[i] = datos
+		i++
+	}
+	topVuelos := TopK(miarr, k)
+	for _, elem := range topVuelos {
+		fmt.Printf("%d - %d\n", elem.prioridad, elem.numeroVuelo)
+	}
 }

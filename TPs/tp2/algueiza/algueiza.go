@@ -6,7 +6,7 @@ import (
 	"os"
 	"strconv"
 	"tdas/diccionario"
-	//"tdas/pila"
+	"tdas/pila"
 )
 
 type VueloImpl struct {
@@ -37,25 +37,38 @@ func AgregarArchivo(archivo string, diccFechas diccionario.DiccionarioOrdenado[s
 	for _, linea := range data {
 		numeroVuelo, _ := strconv.Atoi(linea[0])
 		fecha := linea[6]
-		if !diccNumerosVuelo.Pertenece(numeroVuelo) {
-			diccNumerosVuelo.Guardar(numeroVuelo, fecha)
-		} else {
-			nuevaFecha := diccNumerosVuelo.Obtener(numeroVuelo)
-			diccFechas.Borrar(nuevaFecha)
-			diccNumerosVuelo.Guardar(numeroVuelo, fecha)
-
-		}
 		prioridad, _ := strconv.Atoi(linea[5])
 		atraso, _ := strconv.Atoi(linea[7])
 		tiempoDeVuelo, _ := strconv.Atoi(linea[8])
 		cancelado, _ := strconv.Atoi(linea[9])
 		datos := VueloImpl{numeroVuelo: numeroVuelo, aerolinea: linea[1], origen: linea[2], destino: linea[3], matricula: linea[4], prioridad: prioridad, fecha: fecha, atraso: atraso, tiempoDeVuelo: tiempoDeVuelo, cancelado: cancelado}
-		diccFechas.Guardar(linea[6], datos)
+		if diccNumerosVuelo.Pertenece(numeroVuelo) {
+			fechaAnterior := diccNumerosVuelo.Obtener(numeroVuelo)
+			diccFechas.Borrar(fechaAnterior)
+			diccNumerosVuelo.Borrar(numeroVuelo)
+		}
+		diccNumerosVuelo.Guardar(numeroVuelo, fecha)
+		diccFechas.Guardar(fecha, datos)
 	}
 }
+
 func VerTablero(k int, modo string, desde string, hasta string, dicc diccionario.DiccionarioOrdenado[string, VueloImpl]) {
-	if k <= 0 || modo != "asc" || modo != "desc" || hasta < desde {
+	if k <= 0 || modo != "asc" && modo != "desc" || hasta < desde {
 		panic("Vuelva a intentarlo")
 	}
-	//for iter := dicc.IteradorRango(&desde, &hasta)
+	pilaAux := pila.CrearPilaDinamica[VueloImpl]()
+	contador := 0
+	for iter := dicc.IteradorRango(&desde, &hasta); iter.HaySiguiente() && contador < k; iter.Siguiente() {
+		_, valor := iter.VerActual()
+		if modo == "desc" {
+			pilaAux.Apilar(valor)
+		} else {
+			fmt.Printf("%s - %d\n", valor.fecha, valor.numeroVuelo)
+		}
+		contador++
+	}
+	for !pilaAux.EstaVacia() {
+		valor := pilaAux.Desapilar()
+		fmt.Printf("%s - %d\n", valor.fecha, valor.numeroVuelo)
+	}
 }

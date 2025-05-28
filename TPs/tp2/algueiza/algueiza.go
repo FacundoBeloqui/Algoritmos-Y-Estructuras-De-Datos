@@ -22,7 +22,7 @@ type VueloImpl struct {
 	cancelado     int
 }
 
-func AgregarArchivo(archivo string, diccFechas diccionario.DiccionarioOrdenado[string, VueloImpl], diccNumerosVuelo diccionario.Diccionario[int, string]) {
+func AgregarArchivo(archivo string, diccFechas diccionario.DiccionarioOrdenado[string, VueloImpl], diccNumerosVuelo diccionario.Diccionario[int, VueloImpl]) {
 	file, err := os.Open(archivo)
 	if err != nil {
 		fmt.Printf("Error %v al abrir el archivo %s", archivo, err)
@@ -43,11 +43,11 @@ func AgregarArchivo(archivo string, diccFechas diccionario.DiccionarioOrdenado[s
 		cancelado, _ := strconv.Atoi(linea[9])
 		datos := VueloImpl{numeroVuelo: numeroVuelo, aerolinea: linea[1], origen: linea[2], destino: linea[3], matricula: linea[4], prioridad: prioridad, fecha: fecha, atraso: atraso, tiempoDeVuelo: tiempoDeVuelo, cancelado: cancelado}
 		if diccNumerosVuelo.Pertenece(numeroVuelo) {
-			fechaAnterior := diccNumerosVuelo.Obtener(numeroVuelo)
-			diccFechas.Borrar(fechaAnterior)
+			datosAnterior := diccNumerosVuelo.Obtener(numeroVuelo)
+			diccFechas.Borrar(datosAnterior.fecha)
 			diccNumerosVuelo.Borrar(numeroVuelo)
 		}
-		diccNumerosVuelo.Guardar(numeroVuelo, fecha)
+		diccNumerosVuelo.Guardar(numeroVuelo, datos)
 		diccFechas.Guardar(fecha, datos)
 	}
 }
@@ -71,4 +71,14 @@ func VerTablero(k int, modo string, desde string, hasta string, dicc diccionario
 		valor := pilaAux.Desapilar()
 		fmt.Printf("%s - %d\n", valor.fecha, valor.numeroVuelo)
 	}
+}
+func InfoVuelo(codigo int, diccionario2 diccionario.Diccionario[int, VueloImpl]) {
+	if !diccionario2.Pertenece(codigo) {
+		panic("El codigo no existe")
+	}
+	datos := diccionario2.Obtener(codigo)
+	fmt.Printf("%d %s %s %s %s %d %s %d %d %d\n",
+		datos.numeroVuelo, datos.aerolinea, datos.origen, datos.destino,
+		datos.matricula, datos.prioridad, datos.fecha, datos.atraso, datos.tiempoDeVuelo, datos.cancelado)
+
 }

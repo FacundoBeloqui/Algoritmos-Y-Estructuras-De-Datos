@@ -6,9 +6,10 @@ import (
 	"os"
 	"strconv"
 	"tdas/diccionario"
+	//"tdas/pila"
 )
 
-type vuelo struct {
+type VueloImpl struct {
 	numeroVuelo   int
 	aerolinea     string
 	origen        string
@@ -21,16 +22,11 @@ type vuelo struct {
 	cancelado     int
 }
 
-var cmpInt = func(a, b int) int {
-	return a - b
-}
-
-func AgregarArchivo(archivo string) diccionario.Diccionario[int, []string] {
-	dicc := diccionario.CrearHash[int, []string]()
+func AgregarArchivo(archivo string, diccFechas diccionario.DiccionarioOrdenado[string, VueloImpl], diccNumerosVuelo diccionario.Diccionario[int, string]) {
 	file, err := os.Open(archivo)
 	if err != nil {
 		fmt.Printf("Error %v al abrir el archivo %s", archivo, err)
-		return dicc
+		return
 	}
 	defer file.Close()
 	reader := csv.NewReader(file)
@@ -38,9 +34,28 @@ func AgregarArchivo(archivo string) diccionario.Diccionario[int, []string] {
 	if err != nil {
 		panic(err)
 	}
-	for _, vuelo := range data {
-		numeroVuelo, _ := strconv.Atoi(vuelo[0])
-		dicc.Guardar(numeroVuelo, vuelo[1:])
+	for _, linea := range data {
+		numeroVuelo, _ := strconv.Atoi(linea[0])
+		fecha := linea[6]
+		if !diccNumerosVuelo.Pertenece(numeroVuelo) {
+			diccNumerosVuelo.Guardar(numeroVuelo, fecha)
+		} else {
+			nuevaFecha := diccNumerosVuelo.Obtener(numeroVuelo)
+			diccFechas.Borrar(nuevaFecha)
+			diccNumerosVuelo.Guardar(numeroVuelo, fecha)
+
+		}
+		prioridad, _ := strconv.Atoi(linea[5])
+		atraso, _ := strconv.Atoi(linea[7])
+		tiempoDeVuelo, _ := strconv.Atoi(linea[8])
+		cancelado, _ := strconv.Atoi(linea[9])
+		datos := VueloImpl{numeroVuelo: numeroVuelo, aerolinea: linea[1], origen: linea[2], destino: linea[3], matricula: linea[4], prioridad: prioridad, fecha: fecha, atraso: atraso, tiempoDeVuelo: tiempoDeVuelo, cancelado: cancelado}
+		diccFechas.Guardar(linea[6], datos)
 	}
-	return dicc
+}
+func VerTablero(k int, modo string, desde string, hasta string, dicc diccionario.DiccionarioOrdenado[string, VueloImpl]) {
+	if k <= 0 || modo != "asc" || modo != "desc" || hasta < desde {
+		panic("Vuelva a intentarlo")
+	}
+	//for iter := dicc.IteradorRango(&desde, &hasta)
 }

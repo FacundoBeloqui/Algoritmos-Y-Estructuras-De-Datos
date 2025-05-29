@@ -147,7 +147,6 @@ func SiguienteVuelo(origen, destino, fecha string, dicc diccionario.DiccionarioO
 	}
 	if !encontrado {
 		fmt.Printf("Error en comando siguiente_vuelo: no hay vuelo registrado desde %s hacia %s desde %s", origen, destino, fecha)
-	} else {
 		println("OK")
 	}
 }

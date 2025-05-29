@@ -55,6 +55,7 @@ func main() {
 
 		case "siguiente_vuelo":
 			algueiza.SiguienteVuelo(comando[1], comando[2], comando[3], diccFechas, diccNumerosVuelo)
+			
 			println()
 
 		case "borrar":
@@ -66,7 +67,6 @@ func main() {
 			println()
 		}
 		mostrarComandos()
-		println()
 	}
 	err := s.Err()
 	if err != nil {

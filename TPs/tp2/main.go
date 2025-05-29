@@ -48,7 +48,7 @@ func main() {
 			algueiza.InfoVuelo(codigo, diccNumerosVuelo)
 			println()
 
-		case "prioridad_vuelo":
+		case "prioridad_vuelos":
 			k, _ := strconv.Atoi(comando[1])
 			algueiza.PrioridadVuelos(k, diccNumerosVuelo)
 			println()

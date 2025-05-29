@@ -51,23 +51,24 @@ func AgregarArchivo(archivo string, diccFechas diccionario.DiccionarioOrdenado[s
 		diccNumerosVuelo.Guardar(numeroVuelo, datos)
 		diccFechas.Guardar(fecha, datos)
 	}
+	println("OK")
 }
 
 func VerTablero(k int, modo string, desde string, hasta string, dicc diccionario.DiccionarioOrdenado[string, VueloImpl]) {
 	if k <= 0 {
-        fmt.Fprintf(os.Stderr, "Error en comando ver_tablero: cantidad no válida\n")
-        return
-    }
+		fmt.Fprintf(os.Stderr, "Error en comando ver_tablero: cantidad no válida\n")
+		return
+	}
 
-    if modo != "asc" && modo != "desc" {
-        fmt.Fprintf(os.Stderr, "Error en comando ver_tablero: modo no válido\n")
-        return
-    }
+	if modo != "asc" && modo != "desc" {
+		fmt.Fprintf(os.Stderr, "Error en comando ver_tablero: modo no válido\n")
+		return
+	}
 
-    if hasta < desde {
-        fmt.Fprintf(os.Stderr, "Error en comando ver_tablero: hasta es mayor que desde\n")
-        return
-    }
+	if hasta < desde {
+		fmt.Fprintf(os.Stderr, "Error en comando ver_tablero: hasta es mayor que desde\n")
+		return
+	}
 	pilaAux := pila.CrearPilaDinamica[VueloImpl]()
 	contador := 0
 	for iter := dicc.IteradorRango(&desde, &hasta); iter.HaySiguiente() && contador < k; iter.Siguiente() {
@@ -83,6 +84,7 @@ func VerTablero(k int, modo string, desde string, hasta string, dicc diccionario
 		valor := pilaAux.Desapilar()
 		fmt.Printf("%s - %d\n", valor.fecha, valor.numeroVuelo)
 	}
+	println("OK")
 }
 func InfoVuelo(codigo int, diccionario2 diccionario.Diccionario[int, VueloImpl]) {
 	if !diccionario2.Pertenece(codigo) {
@@ -93,7 +95,7 @@ func InfoVuelo(codigo int, diccionario2 diccionario.Diccionario[int, VueloImpl])
 	fmt.Printf("%d %s %s %s %s %d %s %d %d %d\n",
 		datos.numeroVuelo, datos.aerolinea, datos.origen, datos.destino,
 		datos.matricula, datos.prioridad, datos.fecha, datos.atraso, datos.tiempoDeVuelo, datos.cancelado)
-
+	println("OK")
 }
 func cmp(a, b VueloImpl) int {
 	if a.prioridad > b.prioridad {
@@ -131,6 +133,7 @@ func PrioridadVuelos(k int, diccionario2 diccionario.Diccionario[int, VueloImpl]
 	for _, elem := range topVuelos {
 		fmt.Printf("%d - %d\n", elem.prioridad, elem.numeroVuelo)
 	}
+	println("OK")
 }
 
 func SiguienteVuelo(origen, destino, fecha string, dicc diccionario.DiccionarioOrdenado[string, VueloImpl], diccionario2 diccionario.Diccionario[int, VueloImpl]) {
@@ -144,6 +147,8 @@ func SiguienteVuelo(origen, destino, fecha string, dicc diccionario.DiccionarioO
 	}
 	if !encontrado {
 		fmt.Printf("Error en comando siguiente_vuelo: no hay vuelo registrado desde %s hacia %s desde %s", origen, destino, fecha)
+	} else {
+		println("OK")
 	}
 }
 
@@ -158,4 +163,5 @@ func Borrar(desde, hasta string, dicc diccionario.DiccionarioOrdenado[string, Vu
 		dicc.Borrar(clave)
 		diccionario2.Borrar(valor.numeroVuelo)
 	}
+	println("OK")
 }

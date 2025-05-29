@@ -26,7 +26,7 @@ type VueloImpl struct {
 func AgregarArchivo(archivo string, diccFechas diccionario.DiccionarioOrdenado[string, VueloImpl], diccNumerosVuelo diccionario.Diccionario[int, VueloImpl]) {
 	file, err := os.Open(archivo)
 	if err != nil {
-		fmt.Printf("Error %v al abrir el archivo %s", archivo, err)
+		fmt.Fprintf(os.Stderr, "Error en comando agregar_archivo: no se pudo abrir el archivo %s: %v\n", archivo, err)
 		return
 	}
 	defer file.Close()
@@ -54,9 +54,20 @@ func AgregarArchivo(archivo string, diccFechas diccionario.DiccionarioOrdenado[s
 }
 
 func VerTablero(k int, modo string, desde string, hasta string, dicc diccionario.DiccionarioOrdenado[string, VueloImpl]) {
-	if k <= 0 || modo != "asc" && modo != "desc" || hasta < desde {
-		fmt.Print("Vuelva a intentarlo")
-	}
+	if k <= 0 {
+        fmt.Fprintf(os.Stderr, "Error en comando ver_tablero: cantidad no válida\n")
+        return
+    }
+
+    if modo != "asc" && modo != "desc" {
+        fmt.Fprintf(os.Stderr, "Error en comando ver_tablero: modo no válido\n")
+        return
+    }
+
+    if hasta < desde {
+        fmt.Fprintf(os.Stderr, "Error en comando ver_tablero: hasta es mayor que desde\n")
+        return
+    }
 	pilaAux := pila.CrearPilaDinamica[VueloImpl]()
 	contador := 0
 	for iter := dicc.IteradorRango(&desde, &hasta); iter.HaySiguiente() && contador < k; iter.Siguiente() {
@@ -75,7 +86,8 @@ func VerTablero(k int, modo string, desde string, hasta string, dicc diccionario
 }
 func InfoVuelo(codigo int, diccionario2 diccionario.Diccionario[int, VueloImpl]) {
 	if !diccionario2.Pertenece(codigo) {
-		fmt.Print("El codigo no existe")
+		fmt.Printf("Error en comando info_vuelo: el vuelo %d no fue encontrado\n", codigo)
+		return
 	}
 	datos := diccionario2.Obtener(codigo)
 	fmt.Printf("%d %s %s %s %s %d %s %d %d %d\n",
@@ -131,13 +143,14 @@ func SiguienteVuelo(origen, destino, fecha string, dicc diccionario.DiccionarioO
 		}
 	}
 	if !encontrado {
-		fmt.Printf("No hay vuelo registrado desde %s hacia %s desde %s", origen, destino, fecha)
+		fmt.Printf("Error en comando siguiente_vuelo: no hay vuelo registrado desde %s hacia %s desde %s", origen, destino, fecha)
 	}
 }
 
 func Borrar(desde, hasta string, dicc diccionario.DiccionarioOrdenado[string, VueloImpl], diccionario2 diccionario.Diccionario[int, VueloImpl]) {
 	if desde > hasta {
-		fmt.Print("desde es mayor a hasta")
+		fmt.Print("Error en comando borrar: hasta es mayor que desde")
+		return
 	}
 	for iter := dicc.IteradorRango(&desde, &hasta); iter.HaySiguiente(); iter.Siguiente() {
 		clave, valor := iter.VerActual()

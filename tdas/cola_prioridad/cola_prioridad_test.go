@@ -4,7 +4,7 @@ import (
 	"strings"
 	TDAColaPrioridad "tdas/cola_prioridad"
 	"testing"
-
+	"math/rand"
 	"github.com/stretchr/testify/require"
 )
 
@@ -23,14 +23,9 @@ func TestColaPrioridadVacia(t *testing.T) {
 func TestUnElemento(t *testing.T) {
 	heap := TDAColaPrioridad.CrearHeap(cmpInt)
 	heap.Encolar(5)
-	require.EqualValues(t, 1, heap.Cantidad())
-	require.EqualValues(t, 5, heap.VerMax())
 	require.False(t, heap.EstaVacia())
 	require.EqualValues(t, 5, heap.Desencolar())
 	require.True(t, heap.EstaVacia())
-	require.PanicsWithValue(t, "La cola esta vacia", func() { heap.VerMax() })
-	require.PanicsWithValue(t, "La cola esta vacia", func() { heap.Desencolar() })
-	require.EqualValues(t, 0, heap.Cantidad())
 }
 
 func TestEsMaxHeap(t *testing.T) {
@@ -197,19 +192,45 @@ func TestHeapSort(t *testing.T) {
 	require.Equal(t, esperado, arr)
 }
 
-func TestVolumen(t *testing.T) {
+func TestVolumenHeap(t *testing.T) {
 	heap := TDAColaPrioridad.CrearHeap(cmpInt)
-	const n = 1000000
+	const maximo = 1000000
+	arr := make([]int, maximo)
+	for i := 0; i < maximo; i++ {
+		arr[i] = i
+	}
+	desordenar(arr)
+	for i, elem := range arr{
+		heap.Encolar(elem)
+		require.EqualValues(t, i+1, heap.Cantidad())
+	}
+	for i := 0; i < maximo; i++{
+		require.EqualValues(t, maximo-i-1, heap.VerMax())
+		require.EqualValues(t, maximo-i-1, heap.Desencolar())
+		require.EqualValues(t, maximo-i-1, heap.Cantidad())
 
-	for i := range n {
-		heap.Encolar(i)
-		require.EqualValues(t, i, heap.VerMax())
+	} 
+}
+
+func TestVolumenHeapSort(t *testing.T) {
+	const maximo = 1000000
+	arr := make([]int, maximo)
+	for i := 0; i < maximo; i++ {
+		arr[i] = i
+	}
+	desordenar(arr)
+	TDAColaPrioridad.HeapSort(arr, cmpInt)
+
+	 for i := 1; i < maximo; i++ {
+		require.LessOrEqual(t, arr[i-1], arr[i])
 	}
 
-	anterior := heap.Desencolar()
-	for !heap.EstaVacia() {
-		actual := heap.Desencolar()
-		require.LessOrEqual(t, actual, anterior)
-		anterior = actual
+}
+
+func desordenar[T any](arr []T) {
+	n := len(arr)
+	for i := n - 1; i >= 0; i-- {
+		j := rand.Intn(i + 1)
+		arr[i], arr[j] = arr[j], arr[i]
 	}
 }

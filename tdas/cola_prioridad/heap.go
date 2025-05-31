@@ -74,8 +74,6 @@ func (heap *colaConPrioridad[T]) Desencolar() T {
 	dato := heap.datos[RAIZ]
 	heap.cant--
 	swap(heap.datos, RAIZ, heap.cant)
-	var cero T
-	heap.datos[heap.cant] = cero
 	downheap(heap.datos, heap.cant, RAIZ, heap.cmp)
 	if heap.cant*FACTOR_REDUCCION <= len(heap.datos) {
 		heap.Redimension(len(heap.datos)/MULTIPLO_CRECIMIENTO)

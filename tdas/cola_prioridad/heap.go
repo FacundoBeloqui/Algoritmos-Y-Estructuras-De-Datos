@@ -1,6 +1,6 @@
 package cola_prioridad
 
-const CAPACIDAD_INICIAL = 1
+const CAPACIDAD_INICIAL = 16
 const FACTOR_REDUCCION = 4
 const MULTIPLO_CRECIMIENTO = 2
 const RAIZ = 0
@@ -20,24 +20,15 @@ func CrearHeap[T any](funcion_cmp func(T, T) int) ColaPrioridad[T] {
 }
 
 func CrearHeapArr[T any](arreglo []T, funcion_cmp func(T, T) int) ColaPrioridad[T] {
-	if len(arreglo) == 0 {
-		heap := &colaConPrioridad[T]{
-			datos: make([]T, CAPACIDAD_INICIAL),
-			cant:  0,
-			cmp:   funcion_cmp,
-		}
-		return heap
-	} else {
-		arr := make([]T, len(arreglo))
-		copy(arr, arreglo)
-		heap := &colaConPrioridad[T]{
-			datos: arr,
-			cant:  len(arr),
-			cmp:   funcion_cmp,
-		}
-		heapify(arr, len(arr), funcion_cmp)
-		return heap
+	arr := make([]T, len(arreglo))
+	copy(arr, arreglo)
+	heap := &colaConPrioridad[T]{
+		datos: arr,
+		cant:  len(arr),
+		cmp:   funcion_cmp,
 	}
+	heapify(arr, len(arr), funcion_cmp)
+	return heap
 }
 
 func calcularPosicionHijoIzquierdo(posicion int) int {
@@ -55,7 +46,7 @@ func (heap *colaConPrioridad[T]) EstaVacia() bool {
 
 func (heap *colaConPrioridad[T]) Encolar(elemento T) {
 	if heap.cant == len(heap.datos) {
-		redimension(heap, len(heap.datos)*MULTIPLO_CRECIMIENTO)
+		heap.Redimension(len(heap.datos)*MULTIPLO_CRECIMIENTO)
 	}
 	heap.datos[heap.cant] = elemento
 	heap.cant++
@@ -63,14 +54,13 @@ func (heap *colaConPrioridad[T]) Encolar(elemento T) {
 }
 
 func upheap[T any](datos []T, posicionHijo int, funcion_cmp func(T, T) int) {
-	for posicionHijo > RAIZ {
-		posicionPadre := calcularPosicionPadre(posicionHijo)
-		if funcion_cmp(datos[posicionHijo], datos[posicionPadre]) > 0 {
-			datos[posicionHijo], datos[posicionPadre] = datos[posicionPadre], datos[posicionHijo]
-			posicionHijo = posicionPadre
-		} else {
-			break
-		}
+	for posicionHijo <= RAIZ {
+		return
+	}
+	posicionPadre := calcularPosicionPadre(posicionHijo)
+	if funcion_cmp(datos[posicionHijo], datos[posicionPadre]) > 0 {
+		swap(datos, posicionHijo, posicionPadre)
+		upheap(datos, posicionPadre, funcion_cmp)
 	}
 }
 
@@ -83,41 +73,43 @@ func (heap *colaConPrioridad[T]) Desencolar() T {
 	heap.verifcarColaVacia()
 	dato := heap.datos[RAIZ]
 	heap.cant--
-	heap.datos[RAIZ], heap.datos[heap.cant] = heap.datos[heap.cant], heap.datos[RAIZ]
+	swap(heap.datos, RAIZ, heap.cant)
 	var cero T
 	heap.datos[heap.cant] = cero
-	if heap.cant*FACTOR_REDUCCION <= len(heap.datos) {
-		redimension(heap, len(heap.datos)/MULTIPLO_CRECIMIENTO)
-	}
 	downheap(heap.datos, heap.cant, RAIZ, heap.cmp)
+	if heap.cant*FACTOR_REDUCCION <= len(heap.datos) {
+		heap.Redimension(len(heap.datos)/MULTIPLO_CRECIMIENTO)
+	}
 	return dato
 }
-func redimension[T any](heap *colaConPrioridad[T], nuevaCapacidad int) {
+
+func (heap *colaConPrioridad[T]) Redimension (nuevaCapacidad int) {
 	nuevosDatos := make([]T, nuevaCapacidad)
 	copy(nuevosDatos, heap.datos)
 	heap.datos = nuevosDatos
 }
+
 func downheap[T any](datos []T, cantidad int, posicion int, funcion_cmp func(T, T) int) {
-	for posicion < cantidad {
-		hijoIzquierdo := calcularPosicionHijoIzquierdo(posicion)
-		hijoDerecho := calcularPosicionHijoDerecho(posicion)
-		mayor := posicion
+	
+	hijoIzquierdo := calcularPosicionHijoIzquierdo(posicion)
+	hijoDerecho := calcularPosicionHijoDerecho(posicion)
+	mayor := posicion
 
-		if hijoIzquierdo < cantidad && funcion_cmp(datos[hijoIzquierdo], datos[mayor]) > 0 {
-			mayor = hijoIzquierdo
-		}
-
-		if hijoDerecho < cantidad && funcion_cmp(datos[hijoDerecho], datos[mayor]) > 0 {
-			mayor = hijoDerecho
-		}
-
-		if mayor == posicion {
-			break
-		}
-
-		datos[posicion], datos[mayor] = datos[mayor], datos[posicion]
-		posicion = mayor
+	if hijoIzquierdo < cantidad && funcion_cmp(datos[hijoIzquierdo], datos[mayor]) > 0 {
+		mayor = hijoIzquierdo
 	}
+
+	if hijoDerecho < cantidad && funcion_cmp(datos[hijoDerecho], datos[mayor]) > 0 {
+		mayor = hijoDerecho
+	}
+
+	if mayor == posicion {
+		return
+	}
+
+	swap(datos, posicion, mayor)
+	downheap(datos, cantidad, mayor, funcion_cmp)
+	
 }
 
 func (heap *colaConPrioridad[T]) Cantidad() int {
@@ -131,7 +123,7 @@ func (heap *colaConPrioridad[T]) verifcarColaVacia() {
 }
 
 func heapify[T any](elementos []T, cant int, funcion_cmp func(T, T) int) {
-	for i := cant; i >= 0; i-- {
+	for i := cant-1; i >= 0; i-- {
 		downheap(elementos, cant, i, funcion_cmp)
 	}
 }
@@ -139,7 +131,11 @@ func heapify[T any](elementos []T, cant int, funcion_cmp func(T, T) int) {
 func HeapSort[T any](elementos []T, funcion_cmp func(T, T) int) {
 	heapify(elementos, len(elementos), funcion_cmp)
 	for i := len(elementos) - 1; i >= 0; i-- {
-		elementos[0], elementos[i] = elementos[i], elementos[0]
+		swap(elementos, 0, i)
 		downheap(elementos, i, 0, funcion_cmp)
 	}
+}
+
+func swap[T any] (elementos []T, i, j int){
+	elementos[i], elementos[j] = elementos[j], elementos[i]
 }

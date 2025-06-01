@@ -9,20 +9,8 @@ import (
 	"tp2/algueiza"
 )
 
-func mostrarComandos() {
-	fmt.Println("Elija una de las siguientes opciones:")
-	fmt.Println("- agregar_archivo <nombre_archivo> ")
-	fmt.Println("- ver_tablero <K cantidad vuelos> <modo: asc/desc> <desde> <hasta>")
-	fmt.Println("- info_vuelo <código vuelo>")
-	fmt.Println("- prioridad_vuelos <K cantidad vuelos>")
-	fmt.Println("- siguiente_vuelo <aeropuerto origen> <aeropuerto destino> <fecha>")
-	fmt.Println("- borrar <desde> <hasta>")
-	println()
-}
 func main() {
 	tablero := algueiza.CrearTablero()
-	fmt.Println("Bienvenido a Algueiza!")
-	mostrarComandos()
 	s := bufio.NewScanner(os.Stdin)
 	for s.Scan() {
 		if s.Text() == "" {
@@ -62,7 +50,6 @@ func main() {
 		} else {
 			fmt.Println(err)
 		}
-		mostrarComandos()
 	}
 
 }

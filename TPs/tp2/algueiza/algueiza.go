@@ -152,13 +152,13 @@ func (t *TableroImpl) SiguienteVuelo(origen, destino, fecha string) {
 		}
 	}
 	if !encontrado {
-		fmt.Printf("Error en comando siguiente_vuelo: no hay vuelo registrado desde %s hacia %s desde %s", origen, destino, fecha)
+		fmt.Printf("Error en comando siguiente_vuelo: no hay vuelo registrado desde %s hacia %s desde %s\n", origen, destino, fecha)
 	}
 }
 
 func (t *TableroImpl) Borrar(desde, hasta string) {
 	if desde > hasta {
-		fmt.Print("Error en comando borrar: hasta es mayor que desde")
+		fmt.Println("Error en comando borrar: hasta es mayor que desde")
 		return
 	}
 	for iter := t.vuelosFecha.IteradorRango(&desde, &hasta); iter.HaySiguiente(); iter.Siguiente() {

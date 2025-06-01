@@ -1,11 +1,11 @@
 package cola_prioridad_test
 
 import (
+	"github.com/stretchr/testify/require"
+	"math/rand"
 	"strings"
 	TDAColaPrioridad "tdas/cola_prioridad"
 	"testing"
-	"math/rand"
-	"github.com/stretchr/testify/require"
 )
 
 var cmpInt = func(a, b int) int {
@@ -185,6 +185,33 @@ func TestCrearArregloVacio(t *testing.T) {
 	require.PanicsWithValue(t, "La cola esta vacia", func() { heap.Desencolar() })
 }
 
+func TestEncolarArregloVacio(t *testing.T) {
+	var arr []int
+	heap := TDAColaPrioridad.CrearHeapArr(arr, cmpInt)
+
+	heap.Encolar(12)
+	require.EqualValues(t, 1, heap.Cantidad())
+	require.EqualValues(t, 12, heap.VerMax())
+	heap.Encolar(18)
+	require.EqualValues(t, 2, heap.Cantidad())
+	require.EqualValues(t, 18, heap.VerMax())
+	heap.Encolar(7)
+	require.EqualValues(t, 3, heap.Cantidad())
+	require.EqualValues(t, 18, heap.VerMax())
+}
+
+func TestDesencolarArregloVacio(t *testing.T) {
+	var arr []int
+	heap := TDAColaPrioridad.CrearHeapArr(arr, cmpInt)
+
+	heap.Encolar(12)
+	heap.Encolar(18)
+	heap.Encolar(7)
+	require.EqualValues(t, 18, heap.Desencolar())
+	require.EqualValues(t, 2, heap.Cantidad())
+	require.EqualValues(t, 12, heap.VerMax())
+}
+
 func TestHeapSort(t *testing.T) {
 	arr := []int{5, 8, 1, 7, 20, 14, 24, 2}
 	TDAColaPrioridad.HeapSort(arr, cmpInt)
@@ -200,16 +227,16 @@ func TestVolumenHeap(t *testing.T) {
 		arr[i] = i
 	}
 	desordenar(arr)
-	for i, elem := range arr{
+	for i, elem := range arr {
 		heap.Encolar(elem)
 		require.EqualValues(t, i+1, heap.Cantidad())
 	}
-	for i := 0; i < maximo; i++{
+	for i := 0; i < maximo; i++ {
 		require.EqualValues(t, maximo-i-1, heap.VerMax())
 		require.EqualValues(t, maximo-i-1, heap.Desencolar())
 		require.EqualValues(t, maximo-i-1, heap.Cantidad())
 
-	} 
+	}
 }
 
 func TestVolumenHeapSort(t *testing.T) {
@@ -221,7 +248,7 @@ func TestVolumenHeapSort(t *testing.T) {
 	desordenar(arr)
 	TDAColaPrioridad.HeapSort(arr, cmpInt)
 
-	 for i := 1; i < maximo; i++ {
+	for i := 1; i < maximo; i++ {
 		require.LessOrEqual(t, arr[i-1], arr[i])
 	}
 

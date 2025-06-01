@@ -20,11 +20,19 @@ func CrearHeap[T any](funcion_cmp func(T, T) int) ColaPrioridad[T] {
 }
 
 func CrearHeapArr[T any](arreglo []T, funcion_cmp func(T, T) int) ColaPrioridad[T] {
-	arr := make([]T, len(arreglo))
+	var arr []T
+	var cant int
+	if len(arreglo) == 0 {
+		arr = make([]T, CAPACIDAD_INICIAL)
+		cant = 0
+	} else {
+		arr = make([]T, len(arreglo))
+		cant = len(arreglo)
+	}
 	copy(arr, arreglo)
 	heap := &colaConPrioridad[T]{
 		datos: arr,
-		cant:  len(arr),
+		cant:  cant,
 		cmp:   funcion_cmp,
 	}
 	heapify(arr, len(arr), funcion_cmp)
@@ -46,7 +54,7 @@ func (heap *colaConPrioridad[T]) EstaVacia() bool {
 
 func (heap *colaConPrioridad[T]) Encolar(elemento T) {
 	if heap.cant == len(heap.datos) {
-		heap.Redimension(len(heap.datos)*MULTIPLO_CRECIMIENTO)
+		heap.redimension(len(heap.datos) * MULTIPLO_CRECIMIENTO)
 	}
 	heap.datos[heap.cant] = elemento
 	heap.cant++
@@ -76,19 +84,19 @@ func (heap *colaConPrioridad[T]) Desencolar() T {
 	swap(heap.datos, RAIZ, heap.cant)
 	downheap(heap.datos, heap.cant, RAIZ, heap.cmp)
 	if heap.cant*FACTOR_REDUCCION <= len(heap.datos) {
-		heap.Redimension(len(heap.datos)/MULTIPLO_CRECIMIENTO)
+		heap.redimension(len(heap.datos) / MULTIPLO_CRECIMIENTO)
 	}
 	return dato
 }
 
-func (heap *colaConPrioridad[T]) Redimension (nuevaCapacidad int) {
+func (heap *colaConPrioridad[T]) redimension(nuevaCapacidad int) {
 	nuevosDatos := make([]T, nuevaCapacidad)
 	copy(nuevosDatos, heap.datos)
 	heap.datos = nuevosDatos
 }
 
 func downheap[T any](datos []T, cantidad int, posicion int, funcion_cmp func(T, T) int) {
-	
+
 	hijoIzquierdo := calcularPosicionHijoIzquierdo(posicion)
 	hijoDerecho := calcularPosicionHijoDerecho(posicion)
 	mayor := posicion
@@ -107,7 +115,7 @@ func downheap[T any](datos []T, cantidad int, posicion int, funcion_cmp func(T, 
 
 	swap(datos, posicion, mayor)
 	downheap(datos, cantidad, mayor, funcion_cmp)
-	
+
 }
 
 func (heap *colaConPrioridad[T]) Cantidad() int {
@@ -121,7 +129,7 @@ func (heap *colaConPrioridad[T]) verifcarColaVacia() {
 }
 
 func heapify[T any](elementos []T, cant int, funcion_cmp func(T, T) int) {
-	for i := cant-1; i >= 0; i-- {
+	for i := cant - 1; i >= 0; i-- {
 		downheap(elementos, cant, i, funcion_cmp)
 	}
 }
@@ -134,6 +142,6 @@ func HeapSort[T any](elementos []T, funcion_cmp func(T, T) int) {
 	}
 }
 
-func swap[T any] (elementos []T, i, j int){
+func swap[T any](elementos []T, i, j int) {
 	elementos[i], elementos[j] = elementos[j], elementos[i]
 }

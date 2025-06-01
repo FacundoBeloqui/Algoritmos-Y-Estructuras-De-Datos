@@ -1,1 +1,6 @@
-./pruebas.sh: line 21: /home/facu/Documents/FIUBA/Algoritmos-Y-Estructuras-De-Datos/TPs/tp2: Is a directory
+
+panic: runtime error: index out of range [2] with length 2
+
+goroutine 1 [running]:
+main.main()
+	/home/facu/Documents/FIUBA/Algoritmos-Y-Estructuras-De-Datos/TPs/tp2/main.go:52 +0x6b2

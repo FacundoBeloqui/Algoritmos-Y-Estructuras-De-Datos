@@ -5,12 +5,17 @@ import (
 	"fmt"
 	"os"
 	"strconv"
+	"strings"
 	"tdas/cola_prioridad"
 	"tdas/diccionario"
 	"tdas/pila"
 )
 
-type VueloImpl struct {
+type TableroImpl struct {
+	vuelosCodigo diccionario.Diccionario[int, vuelo]
+	vuelosFecha  diccionario.DiccionarioOrdenado[string, vuelo]
+}
+type vuelo struct {
 	numeroVuelo   int
 	aerolinea     string
 	origen        string
@@ -23,7 +28,12 @@ type VueloImpl struct {
 	cancelado     int
 }
 
-func AgregarArchivo(archivo string, diccFechas diccionario.DiccionarioOrdenado[string, VueloImpl], diccNumerosVuelo diccionario.Diccionario[int, VueloImpl]) {
+func CrearTablero() *TableroImpl {
+	vuelosCodigo := diccionario.CrearHash[int, vuelo]()
+	vuelosFecha := diccionario.CrearABB[string, vuelo](strings.Compare)
+	return &TableroImpl{vuelosCodigo: vuelosCodigo, vuelosFecha: vuelosFecha}
+}
+func (t *TableroImpl) AgregarArchivo(archivo string) {
 	file, err := os.Open(archivo)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error en comando agregar_archivo: no se pudo abrir el archivo %s: %v\n", archivo, err)
@@ -42,19 +52,18 @@ func AgregarArchivo(archivo string, diccFechas diccionario.DiccionarioOrdenado[s
 		atraso, _ := strconv.Atoi(linea[7])
 		tiempoDeVuelo, _ := strconv.Atoi(linea[8])
 		cancelado, _ := strconv.Atoi(linea[9])
-		datos := VueloImpl{numeroVuelo: numeroVuelo, aerolinea: linea[1], origen: linea[2], destino: linea[3], matricula: linea[4], prioridad: prioridad, fecha: fecha, atraso: atraso, tiempoDeVuelo: tiempoDeVuelo, cancelado: cancelado}
-		if diccNumerosVuelo.Pertenece(numeroVuelo) {
-			datosAnterior := diccNumerosVuelo.Obtener(numeroVuelo)
-			diccFechas.Borrar(datosAnterior.fecha)
-			diccNumerosVuelo.Borrar(numeroVuelo)
+		datos := vuelo{numeroVuelo: numeroVuelo, aerolinea: linea[1], origen: linea[2], destino: linea[3], matricula: linea[4], prioridad: prioridad, fecha: fecha, atraso: atraso, tiempoDeVuelo: tiempoDeVuelo, cancelado: cancelado}
+		if t.vuelosCodigo.Pertenece(numeroVuelo) {
+			datosAnterior := t.vuelosCodigo.Obtener(numeroVuelo)
+			t.vuelosFecha.Borrar(datosAnterior.fecha)
+			t.vuelosCodigo.Borrar(numeroVuelo)
 		}
-		diccNumerosVuelo.Guardar(numeroVuelo, datos)
-		diccFechas.Guardar(fecha, datos)
+		t.vuelosCodigo.Guardar(numeroVuelo, datos)
+		t.vuelosFecha.Guardar(fecha, datos)
 	}
-	println("OK")
 }
 
-func VerTablero(k int, modo string, desde string, hasta string, dicc diccionario.DiccionarioOrdenado[string, VueloImpl]) {
+func (t *TableroImpl) VerTablero(k int, modo string, desde string, hasta string) {
 	if k <= 0 {
 		fmt.Fprintf(os.Stderr, "Error en comando ver_tablero: cantidad no válida\n")
 		return
@@ -69,9 +78,9 @@ func VerTablero(k int, modo string, desde string, hasta string, dicc diccionario
 		fmt.Fprintf(os.Stderr, "Error en comando ver_tablero: hasta es mayor que desde\n")
 		return
 	}
-	pilaAux := pila.CrearPilaDinamica[VueloImpl]()
+	pilaAux := pila.CrearPilaDinamica[vuelo]()
 	contador := 0
-	for iter := dicc.IteradorRango(&desde, &hasta); iter.HaySiguiente() && contador < k; iter.Siguiente() {
+	for iter := t.vuelosFecha.IteradorRango(&desde, &hasta); iter.HaySiguiente() && contador < k; iter.Siguiente() {
 		_, valor := iter.VerActual()
 		if modo == "desc" {
 			pilaAux.Apilar(valor)
@@ -84,20 +93,18 @@ func VerTablero(k int, modo string, desde string, hasta string, dicc diccionario
 		valor := pilaAux.Desapilar()
 		fmt.Printf("%s - %d\n", valor.fecha, valor.numeroVuelo)
 	}
-	println("OK")
 }
-func InfoVuelo(codigo int, diccionario2 diccionario.Diccionario[int, VueloImpl]) {
-	if !diccionario2.Pertenece(codigo) {
+func (t *TableroImpl) InfoVuelo(codigo int) {
+	if !t.vuelosCodigo.Pertenece(codigo) {
 		fmt.Printf("Error en comando info_vuelo: el vuelo %d no fue encontrado\n", codigo)
 		return
 	}
-	datos := diccionario2.Obtener(codigo)
+	datos := t.vuelosCodigo.Obtener(codigo)
 	fmt.Printf("%d %s %s %s %s %d %s %d %d %d\n",
 		datos.numeroVuelo, datos.aerolinea, datos.origen, datos.destino,
 		datos.matricula, datos.prioridad, datos.fecha, datos.atraso, datos.tiempoDeVuelo, datos.cancelado)
-	println("OK")
 }
-func cmp(a, b VueloImpl) int {
+func cmp(a, b vuelo) int {
 	if a.prioridad > b.prioridad {
 		return 1
 	} else if a.prioridad < b.prioridad {
@@ -112,19 +119,19 @@ func cmp(a, b VueloImpl) int {
 	return 0
 }
 
-func TopK(arr []VueloImpl, k int) []VueloImpl {
+func TopK(arr []vuelo, k int) []vuelo {
 	cp := cola_prioridad.CrearHeapArr(arr, cmp)
-	top := make([]VueloImpl, k)
+	top := make([]vuelo, k)
 
 	for i := 0; i < k; i++ {
 		top[i] = cp.Desencolar()
 	}
 	return top
 }
-func PrioridadVuelos(k int, diccionario2 diccionario.Diccionario[int, VueloImpl]) {
-	miarr := make([]VueloImpl, diccionario2.Cantidad())
+func (t *TableroImpl) PrioridadVuelos(k int) {
+	miarr := make([]vuelo, t.vuelosCodigo.Cantidad())
 	i := 0
-	for iter := diccionario2.Iterador(); iter.HaySiguiente(); iter.Siguiente() {
+	for iter := t.vuelosCodigo.Iterador(); iter.HaySiguiente(); iter.Siguiente() {
 		_, datos := iter.VerActual()
 		miarr[i] = datos
 		i++
@@ -133,34 +140,31 @@ func PrioridadVuelos(k int, diccionario2 diccionario.Diccionario[int, VueloImpl]
 	for _, elem := range topVuelos {
 		fmt.Printf("%d - %d\n", elem.prioridad, elem.numeroVuelo)
 	}
-	println("OK")
 }
 
-func SiguienteVuelo(origen, destino, fecha string, dicc diccionario.DiccionarioOrdenado[string, VueloImpl], diccionario2 diccionario.Diccionario[int, VueloImpl]) {
+func (t *TableroImpl) SiguienteVuelo(origen, destino, fecha string) {
 	encontrado := false
-	for iter := dicc.IteradorRango(&fecha, nil); iter.HaySiguiente(); iter.Siguiente() {
+	for iter := t.vuelosFecha.IteradorRango(&fecha, nil); iter.HaySiguiente(); iter.Siguiente() {
 		_, valor := iter.VerActual()
 		if valor.destino == destino && valor.origen == origen {
 			encontrado = true
-			InfoVuelo(valor.numeroVuelo, diccionario2)
+			t.InfoVuelo(valor.numeroVuelo)
 		}
 	}
 	if !encontrado {
 		fmt.Printf("Error en comando siguiente_vuelo: no hay vuelo registrado desde %s hacia %s desde %s", origen, destino, fecha)
-		println("OK")
 	}
 }
 
-func Borrar(desde, hasta string, dicc diccionario.DiccionarioOrdenado[string, VueloImpl], diccionario2 diccionario.Diccionario[int, VueloImpl]) {
+func (t *TableroImpl) Borrar(desde, hasta string) {
 	if desde > hasta {
 		fmt.Print("Error en comando borrar: hasta es mayor que desde")
 		return
 	}
-	for iter := dicc.IteradorRango(&desde, &hasta); iter.HaySiguiente(); iter.Siguiente() {
+	for iter := t.vuelosFecha.IteradorRango(&desde, &hasta); iter.HaySiguiente(); iter.Siguiente() {
 		clave, valor := iter.VerActual()
-		InfoVuelo(valor.numeroVuelo, diccionario2)
-		dicc.Borrar(clave)
-		diccionario2.Borrar(valor.numeroVuelo)
+		t.InfoVuelo(valor.numeroVuelo)
+		t.vuelosFecha.Borrar(clave)
+		t.vuelosCodigo.Borrar(valor.numeroVuelo)
 	}
-	println("OK")
 }

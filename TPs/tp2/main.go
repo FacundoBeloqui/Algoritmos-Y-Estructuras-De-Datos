@@ -6,7 +6,6 @@ import (
 	"os"
 	"strconv"
 	"strings"
-	"tdas/diccionario"
 	"tp2/algueiza"
 )
 
@@ -21,9 +20,7 @@ func mostrarComandos() {
 	println()
 }
 func main() {
-	diccFechas := diccionario.CrearABB[string, algueiza.VueloImpl](strings.Compare)
-	diccNumerosVuelo := diccionario.CrearHash[int, algueiza.VueloImpl]()
-
+	tablero := algueiza.CrearTablero()
 	fmt.Println("Bienvenido a Algueiza!")
 	mostrarComandos()
 	s := bufio.NewScanner(os.Stdin)
@@ -35,42 +32,37 @@ func main() {
 		comando := strings.Fields(entrada)
 		switch comando[0] {
 		case "agregar_archivo":
-			algueiza.AgregarArchivo(comando[1], diccFechas, diccNumerosVuelo)
-			println()
+			tablero.AgregarArchivo(comando[1])
 
 		case "ver_tablero":
 			k, _ := strconv.Atoi(comando[1])
-			algueiza.VerTablero(k, comando[2], comando[3], comando[4], diccFechas)
-			println()
+			tablero.VerTablero(k, comando[2], comando[3], comando[4])
 
 		case "info_vuelo":
 			codigo, _ := strconv.Atoi(comando[1])
-			algueiza.InfoVuelo(codigo, diccNumerosVuelo)
-			println()
+			tablero.InfoVuelo(codigo)
 
 		case "prioridad_vuelos":
 			k, _ := strconv.Atoi(comando[1])
-			algueiza.PrioridadVuelos(k, diccNumerosVuelo)
-			println()
+			tablero.PrioridadVuelos(k)
 
 		case "siguiente_vuelo":
-			algueiza.SiguienteVuelo(comando[1], comando[2], comando[3], diccFechas, diccNumerosVuelo)
-			
-			println()
+			tablero.SiguienteVuelo(comando[1], comando[2], comando[3])
 
 		case "borrar":
-			algueiza.Borrar(comando[1], comando[2], diccFechas, diccNumerosVuelo)
-			println()
+			tablero.Borrar(comando[1], comando[2])
 
 		default:
 			fmt.Println("Comando no valido, vuelva a ingresar una de las opciones mostradas")
-			println()
+		}
+		println()
+		err := s.Err()
+		if err == nil {
+			fmt.Println("OK")
+		} else {
+			fmt.Println(err)
 		}
 		mostrarComandos()
-	}
-	err := s.Err()
-	if err != nil {
-		fmt.Println(err)
 	}
 
 }

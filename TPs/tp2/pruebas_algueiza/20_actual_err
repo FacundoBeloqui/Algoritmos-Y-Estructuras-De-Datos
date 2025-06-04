@@ -1,9 +1,0 @@
-panic: La clave no pertenece al diccionario
-
-goroutine 1 [running]:
-tdas/diccionario.(*abb[...]).Borrar(0x4f4d20, {0xc000159784, 0x1a?})
-	/home/facu/Documents/FIUBA/Algoritmos-Y-Estructuras-De-Datos/tdas/diccionario/abb.go:84 +0x38f
-tp2/algueiza.(*TableroImpl).AgregarArchivo(0xc000759f08, {0xc00013c040, 0x14})
-	/home/facu/Documents/FIUBA/Algoritmos-Y-Estructuras-De-Datos/TPs/tp2/algueiza/algueiza.go:58 +0x63f
-main.main()
-	/home/facu/Documents/FIUBA/Algoritmos-Y-Estructuras-De-Datos/TPs/tp2/main.go:34 +0x3ff

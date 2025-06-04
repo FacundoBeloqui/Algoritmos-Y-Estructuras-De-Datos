@@ -1,9 +1,0 @@
-panic: La clave no pertenece al diccionario
-
-goroutine 1 [running]:
-tdas/diccionario.(*abb[...]).Borrar(0x4e60c0, {0xc00001e464, 0x0?})
-	/home/luisana/Algoritmos-Y-Estructuras-De-Datos/tdas/diccionario/abb.go:84 +0x2f5
-tp2/algueiza.(*TableroImpl).AgregarArchivo(0xc000108ed8, {0xc00001e970?, 0x2c?})
-	/home/luisana/Algoritmos-Y-Estructuras-De-Datos/TPs/tp2/algueiza/algueiza.go:58 +0x5bc
-main.main()
-	/home/luisana/Algoritmos-Y-Estructuras-De-Datos/TPs/tp2/main.go:32 +0x568

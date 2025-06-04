@@ -36,7 +36,7 @@ func CrearTablero() *TableroImpl {
 func (t *TableroImpl) AgregarArchivo(archivo string) {
 	file, err := os.Open(archivo)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Error en comando agregar_archivo: no se pudo abrir el archivo %s: %v\n", archivo, err)
+		fmt.Fprintf(os.Stderr, "Error en comando agregar_archivo")
 		return
 	}
 	defer file.Close()
@@ -65,17 +65,17 @@ func (t *TableroImpl) AgregarArchivo(archivo string) {
 
 func (t *TableroImpl) VerTablero(k int, modo string, desde string, hasta string) {
 	if k <= 0 {
-		fmt.Fprintf(os.Stderr, "Error en comando ver_tablero: cantidad no válida\n")
+		fmt.Fprintf(os.Stderr, "Error en comando ver_tablero")
 		return
 	}
 
 	if modo != "asc" && modo != "desc" {
-		fmt.Fprintf(os.Stderr, "Error en comando ver_tablero: modo no válido\n")
+		fmt.Fprintf(os.Stderr, "Error en comando ver_tablero")
 		return
 	}
 
 	if hasta < desde {
-		fmt.Fprintf(os.Stderr, "Error en comando ver_tablero: hasta es mayor que desde\n")
+		fmt.Fprintf(os.Stderr, "Error en comando ver_tablero")
 		return
 	}
 	pilaAux := pila.CrearPilaDinamica[vuelo]()
@@ -96,7 +96,7 @@ func (t *TableroImpl) VerTablero(k int, modo string, desde string, hasta string)
 }
 func (t *TableroImpl) InfoVuelo(codigo int) {
 	if !t.vuelosCodigo.Pertenece(codigo) {
-		fmt.Printf("Error en comando info_vuelo: el vuelo %d no fue encontrado\n", codigo)
+		fmt.Println("Error en comando info_vuelo")
 		return
 	}
 	datos := t.vuelosCodigo.Obtener(codigo)
@@ -110,9 +110,9 @@ func cmp(a, b vuelo) int {
 	} else if a.prioridad < b.prioridad {
 		return -1
 	} else {
-		if a.numeroVuelo > b.numeroVuelo {
+		if a.numeroVuelo < b.numeroVuelo {
 			return 1
-		} else if a.numeroVuelo < b.numeroVuelo {
+		} else if a.numeroVuelo > b.numeroVuelo {
 			return -1
 		}
 	}
@@ -152,13 +152,13 @@ func (t *TableroImpl) SiguienteVuelo(origen, destino, fecha string) {
 		}
 	}
 	if !encontrado {
-		fmt.Printf("Error en comando siguiente_vuelo: no hay vuelo registrado desde %s hacia %s desde %s\n", origen, destino, fecha)
+		fmt.Printf("No hay vuelo registrado desde %s hacia %s desde %s\n", origen, destino, fecha)
 	}
 }
 
 func (t *TableroImpl) Borrar(desde, hasta string) {
 	if desde > hasta {
-		fmt.Println("Error en comando borrar: hasta es mayor que desde")
+		fmt.Println("Error en comando borrar")
 		return
 	}
 	for iter := t.vuelosFecha.IteradorRango(&desde, &hasta); iter.HaySiguiente(); iter.Siguiente() {

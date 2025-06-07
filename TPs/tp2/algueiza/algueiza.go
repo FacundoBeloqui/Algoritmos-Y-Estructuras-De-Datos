@@ -1,19 +1,20 @@
 package algueiza
 
 import (
-	"encoding/csv"
+	"bufio"
+	"tdas/cola_prioridad"
+	"tdas/pila"
+
 	"fmt"
 	"os"
 	"strconv"
 	"strings"
-	"tdas/cola_prioridad"
 	"tdas/diccionario"
-	"tdas/pila"
 )
 
 type TableroImpl struct {
 	vuelosCodigo diccionario.Diccionario[int, vuelo]
-	vuelosFecha  diccionario.DiccionarioOrdenado[string, vuelo]
+	vuelosFecha  diccionario.DiccionarioOrdenado[string, diccionario.DiccionarioOrdenado[int, vuelo]]
 }
 type vuelo struct {
 	numeroVuelo   int
@@ -28,10 +29,23 @@ type vuelo struct {
 	cancelado     int
 }
 
+func cmpInt(a, b int) int {
+	return b - a
+}
 func CrearTablero() *TableroImpl {
 	vuelosCodigo := diccionario.CrearHash[int, vuelo]()
-	vuelosFecha := diccionario.CrearABB[string, vuelo](strings.Compare)
+	vuelosFecha := diccionario.CrearABB[string, diccionario.DiccionarioOrdenado[int, vuelo]](strings.Compare)
+
 	return &TableroImpl{vuelosCodigo: vuelosCodigo, vuelosFecha: vuelosFecha}
+}
+func procesarDatos(datos []string) vuelo {
+	numeroVuelo, _ := strconv.Atoi(datos[0])
+	fecha := datos[6]
+	prioridad, _ := strconv.Atoi(datos[5])
+	atraso, _ := strconv.Atoi(datos[7])
+	tiempoDeVuelo, _ := strconv.Atoi(datos[8])
+	cancelado, _ := strconv.Atoi(datos[9])
+	return vuelo{numeroVuelo: numeroVuelo, aerolinea: datos[1], origen: datos[2], destino: datos[3], matricula: datos[4], prioridad: prioridad, fecha: fecha, atraso: atraso, tiempoDeVuelo: tiempoDeVuelo, cancelado: cancelado}
 }
 func (t *TableroImpl) AgregarArchivo(archivo string) {
 	file, err := os.Open(archivo)
@@ -40,26 +54,28 @@ func (t *TableroImpl) AgregarArchivo(archivo string) {
 		return
 	}
 	defer file.Close()
-	reader := csv.NewReader(file)
-	data, err := reader.ReadAll()
-	if err != nil {
-		panic(err)
-	}
-	for _, linea := range data {
-		numeroVuelo, _ := strconv.Atoi(linea[0])
-		fecha := linea[6]
-		prioridad, _ := strconv.Atoi(linea[5])
-		atraso, _ := strconv.Atoi(linea[7])
-		tiempoDeVuelo, _ := strconv.Atoi(linea[8])
-		cancelado, _ := strconv.Atoi(linea[9])
-		datos := vuelo{numeroVuelo: numeroVuelo, aerolinea: linea[1], origen: linea[2], destino: linea[3], matricula: linea[4], prioridad: prioridad, fecha: fecha, atraso: atraso, tiempoDeVuelo: tiempoDeVuelo, cancelado: cancelado}
-		if t.vuelosCodigo.Pertenece(numeroVuelo) {
-			datosAnterior := t.vuelosCodigo.Obtener(numeroVuelo)
-			t.vuelosFecha.Borrar(datosAnterior.fecha)
-			t.vuelosCodigo.Borrar(numeroVuelo)
+	s := bufio.NewScanner(file)
+	for s.Scan() {
+		linea := s.Text()
+		datos := strings.Split(linea, ",")
+		datosVuelo := procesarDatos(datos)
+		if t.vuelosCodigo.Pertenece(datosVuelo.numeroVuelo) {
+			info := t.vuelosCodigo.Obtener(datosVuelo.numeroVuelo)
+			vuelosEnEsaFecha := t.vuelosFecha.Obtener(info.fecha)
+			if vuelosEnEsaFecha.Pertenece(datosVuelo.numeroVuelo) {
+				vuelosEnEsaFecha.Borrar(datosVuelo.numeroVuelo)
+			}
+			t.vuelosCodigo.Borrar(datosVuelo.numeroVuelo)
 		}
-		t.vuelosCodigo.Guardar(numeroVuelo, datos)
-		t.vuelosFecha.Guardar(fecha, datos)
+		var vuelosParaEsaFecha diccionario.DiccionarioOrdenado[int, vuelo]
+		if t.vuelosFecha.Pertenece(datosVuelo.fecha) {
+			vuelosParaEsaFecha = t.vuelosFecha.Obtener(datosVuelo.fecha)
+		} else {
+			vuelosParaEsaFecha = diccionario.CrearABB[int, vuelo](cmpInt)
+			t.vuelosFecha.Guardar(datosVuelo.fecha, vuelosParaEsaFecha)
+		}
+		vuelosParaEsaFecha.Guardar(datosVuelo.numeroVuelo, datosVuelo)
+		t.vuelosCodigo.Guardar(datosVuelo.numeroVuelo, datosVuelo)
 	}
 }
 
@@ -82,27 +98,32 @@ func (t *TableroImpl) VerTablero(k int, modo string, desde string, hasta string)
 	contador := 0
 	for iter := t.vuelosFecha.IteradorRango(&desde, &hasta); iter.HaySiguiente() && contador < k; iter.Siguiente() {
 		_, valor := iter.VerActual()
-		if modo == "desc" {
-			pilaAux.Apilar(valor)
-		} else {
-			fmt.Printf("%s - %d\n", valor.fecha, valor.numeroVuelo)
+		for iter2 := valor.Iterador(); iter2.HaySiguiente() && contador < k; iter2.Siguiente() {
+			_, datosVuelo := iter2.VerActual()
+			if modo == "desc" {
+				pilaAux.Apilar(datosVuelo)
+			} else {
+				fmt.Printf("%s - %d\n", datosVuelo.fecha, datosVuelo.numeroVuelo)
+				contador++
+			}
 		}
-		contador++
 	}
-	for !pilaAux.EstaVacia() {
+	for !pilaAux.EstaVacia() && contador < k {
 		valor := pilaAux.Desapilar()
 		fmt.Printf("%s - %d\n", valor.fecha, valor.numeroVuelo)
+		contador++
 	}
 }
-func (t *TableroImpl) InfoVuelo(codigo int) {
+func (t *TableroImpl) InfoVuelo(codigo int) error {
 	if !t.vuelosCodigo.Pertenece(codigo) {
-		fmt.Println("Error en comando info_vuelo")
-		return
+		_, err := fmt.Fprintf(os.Stderr, "Error en comando info_vuelo")
+		return err
 	}
 	datos := t.vuelosCodigo.Obtener(codigo)
 	fmt.Printf("%d %s %s %s %s %d %s %d %d %d\n",
 		datos.numeroVuelo, datos.aerolinea, datos.origen, datos.destino,
 		datos.matricula, datos.prioridad, datos.fecha, datos.atraso, datos.tiempoDeVuelo, datos.cancelado)
+	return nil
 }
 func cmp(a, b vuelo) int {
 	if a.prioridad > b.prioridad {
@@ -146,9 +167,12 @@ func (t *TableroImpl) SiguienteVuelo(origen, destino, fecha string) {
 	encontrado := false
 	for iter := t.vuelosFecha.IteradorRango(&fecha, nil); iter.HaySiguiente(); iter.Siguiente() {
 		_, valor := iter.VerActual()
-		if valor.destino == destino && valor.origen == origen {
-			encontrado = true
-			t.InfoVuelo(valor.numeroVuelo)
+		for iter2 := valor.Iterador(); iter2.HaySiguiente(); iter2.Siguiente() {
+			_, datosVuelo := iter2.VerActual()
+			if datosVuelo.destino == destino && datosVuelo.origen == origen {
+				encontrado = true
+				t.InfoVuelo(datosVuelo.numeroVuelo)
+			}
 		}
 	}
 	if !encontrado {
@@ -156,15 +180,27 @@ func (t *TableroImpl) SiguienteVuelo(origen, destino, fecha string) {
 	}
 }
 
-func (t *TableroImpl) Borrar(desde, hasta string) {
+func (t *TableroImpl) Borrar(desde, hasta string) error {
 	if desde > hasta {
-		fmt.Println("Error en comando borrar")
-		return
+		fmt.Fprintf(os.Stderr, "Error en comando borrar")
+		return nil
 	}
 	for iter := t.vuelosFecha.IteradorRango(&desde, &hasta); iter.HaySiguiente(); iter.Siguiente() {
-		clave, valor := iter.VerActual()
-		t.InfoVuelo(valor.numeroVuelo)
-		t.vuelosFecha.Borrar(clave)
-		t.vuelosCodigo.Borrar(valor.numeroVuelo)
+		_, valor := iter.VerActual()
+		for iter2 := valor.Iterador(); iter2.HaySiguiente(); iter2.Siguiente() {
+			_, datosVuelo := iter2.VerActual()
+			diccCodigosFecha := t.vuelosFecha.Obtener(datosVuelo.fecha)
+			if diccCodigosFecha.Cantidad() > 0 {
+				diccCodigosFecha.Borrar(datosVuelo.numeroVuelo)
+			} else {
+				t.vuelosFecha.Borrar(datosVuelo.fecha)
+			}
+			err := t.InfoVuelo(datosVuelo.numeroVuelo)
+			if err != nil {
+				return err
+			}
+			t.vuelosCodigo.Borrar(datosVuelo.numeroVuelo)
+		}
 	}
+	return nil
 }

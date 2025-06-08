@@ -2,6 +2,7 @@ package algueiza
 
 import (
 	"bufio"
+	"errors"
 	"tdas/cola_prioridad"
 	"tdas/pila"
 
@@ -116,8 +117,7 @@ func (t *TableroImpl) VerTablero(k int, modo string, desde string, hasta string)
 }
 func (t *TableroImpl) InfoVuelo(codigo int) error {
 	if !t.vuelosCodigo.Pertenece(codigo) {
-		_, err := fmt.Fprintf(os.Stderr, "Error en comando info_vuelo")
-		return err
+		return errors.New("Error en comando info_vuelo")
 	}
 	datos := t.vuelosCodigo.Obtener(codigo)
 	fmt.Printf("%d %s %s %s %s %d %s %d %d %d\n",
@@ -131,13 +131,16 @@ func cmp(a, b vuelo) int {
 	} else if a.prioridad < b.prioridad {
 		return -1
 	} else {
-		if a.numeroVuelo < b.numeroVuelo {
+		aStr := strconv.Itoa(a.numeroVuelo)
+		bStr := strconv.Itoa(b.numeroVuelo)
+		if aStr < bStr {
 			return 1
-		} else if a.numeroVuelo > b.numeroVuelo {
+		} else if aStr > bStr {
 			return -1
+		} else {
+			return 0
 		}
 	}
-	return 0
 }
 
 func TopK(arr []vuelo, k int) []vuelo {
@@ -164,26 +167,24 @@ func (t *TableroImpl) PrioridadVuelos(k int) {
 }
 
 func (t *TableroImpl) SiguienteVuelo(origen, destino, fecha string) {
-	encontrado := false
 	for iter := t.vuelosFecha.IteradorRango(&fecha, nil); iter.HaySiguiente(); iter.Siguiente() {
 		_, valor := iter.VerActual()
 		for iter2 := valor.Iterador(); iter2.HaySiguiente(); iter2.Siguiente() {
 			_, datosVuelo := iter2.VerActual()
 			if datosVuelo.destino == destino && datosVuelo.origen == origen {
-				encontrado = true
 				t.InfoVuelo(datosVuelo.numeroVuelo)
+				fmt.Println("OK")
+				return
 			}
 		}
 	}
-	if !encontrado {
-		fmt.Printf("No hay vuelo registrado desde %s hacia %s desde %s\n", origen, destino, fecha)
-	}
+	fmt.Printf("No hay vuelo registrado desde %s hacia %s desde %s\n", origen, destino, fecha)
+	fmt.Println("OK")
 }
 
-func (t *TableroImpl) Borrar(desde, hasta string) error {
+func (t *TableroImpl) Borrar(desde, hasta string) {
 	if desde > hasta {
 		fmt.Fprintf(os.Stderr, "Error en comando borrar")
-		return nil
 	}
 	for iter := t.vuelosFecha.IteradorRango(&desde, &hasta); iter.HaySiguiente(); iter.Siguiente() {
 		_, valor := iter.VerActual()
@@ -195,12 +196,8 @@ func (t *TableroImpl) Borrar(desde, hasta string) error {
 			} else {
 				t.vuelosFecha.Borrar(datosVuelo.fecha)
 			}
-			err := t.InfoVuelo(datosVuelo.numeroVuelo)
-			if err != nil {
-				return err
-			}
+			t.InfoVuelo(datosVuelo.numeroVuelo)
 			t.vuelosCodigo.Borrar(datosVuelo.numeroVuelo)
 		}
 	}
-	return nil
 }

@@ -122,12 +122,12 @@ Error en comando ver_tableroError en comando ver_tableropanic: La cola esta vaci
 
 goroutine 1 [running]:
 tdas/cola_prioridad.(*colaConPrioridad[...]).verifcarColaVacia(...)
-	/home/facu/Documents/FIUBA/Algoritmos-Y-Estructuras-De-Datos/tdas/cola_prioridad/heap.go:127
-tdas/cola_prioridad.(*colaConPrioridad[...]).Desencolar(0x503ba0?)
-	/home/facu/Documents/FIUBA/Algoritmos-Y-Estructuras-De-Datos/tdas/cola_prioridad/heap.go:81 +0x38c
-tp2/algueiza.TopK({0xc000454008?, 0xc00049bb04?, 0x2?}, 0x5e)
-	/home/facu/Documents/FIUBA/Algoritmos-Y-Estructuras-De-Datos/TPs/tp2/algueiza/algueiza.go:151 +0xf9
-tp2/algueiza.(*TableroImpl).PrioridadVuelos(0xc000763ea8, 0x5e)
-	/home/facu/Documents/FIUBA/Algoritmos-Y-Estructuras-De-Datos/TPs/tp2/algueiza/algueiza.go:163 +0x23a
+	/home/luisana/Algoritmos-Y-Estructuras-De-Datos/tdas/cola_prioridad/heap.go:127
+tdas/cola_prioridad.(*colaConPrioridad[...]).Desencolar(0x4e6340?)
+	/home/luisana/Algoritmos-Y-Estructuras-De-Datos/tdas/cola_prioridad/heap.go:81 +0x38c
+tp2/algueiza.TopK({0xc0007f0008?, 0xc0007c7144?, 0x2?}, 0x5e)
+	/home/luisana/Algoritmos-Y-Estructuras-De-Datos/TPs/tp2/algueiza/algueiza.go:151 +0xfa
+tp2/algueiza.(*TableroImpl).PrioridadVuelos(0xc000731ea8, 0x5e)
+	/home/luisana/Algoritmos-Y-Estructuras-De-Datos/TPs/tp2/algueiza/algueiza.go:163 +0x23a
 main.main()
-	/home/facu/Documents/FIUBA/Algoritmos-Y-Estructuras-De-Datos/TPs/tp2/main.go:67 +0x845
+	/home/luisana/Algoritmos-Y-Estructuras-De-Datos/TPs/tp2/main.go:67 +0x8ba

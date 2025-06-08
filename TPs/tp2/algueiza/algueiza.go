@@ -188,8 +188,14 @@ func (t *TableroImpl) Borrar(desde, hasta string) {
 	}
 	for iter := t.vuelosFecha.IteradorRango(&desde, &hasta); iter.HaySiguiente(); iter.Siguiente() {
 		_, valor := iter.VerActual()
+		pilaAux := pila.CrearPilaDinamica[vuelo]()
+
 		for iter2 := valor.Iterador(); iter2.HaySiguiente(); iter2.Siguiente() {
 			_, datosVuelo := iter2.VerActual()
+			pilaAux.Apilar(datosVuelo)
+		}
+		for !pilaAux.EstaVacia(){
+			datosVuelo := pilaAux.Desapilar()
 			diccCodigosFecha := t.vuelosFecha.Obtener(datosVuelo.fecha)
 			if diccCodigosFecha.Cantidad() > 0 {
 				diccCodigosFecha.Borrar(datosVuelo.numeroVuelo)

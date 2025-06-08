@@ -5,7 +5,7 @@ import (
 	"errors"
 	"tdas/cola_prioridad"
 	"tdas/pila"
-	"tdas/lista"
+	
 	"fmt"
 	"os"
 	"strconv"
@@ -15,7 +15,7 @@ import (
 
 type TableroImpl struct {
 	vuelosCodigo diccionario.Diccionario[int, vuelo]
-	vuelosFecha  diccionario.DiccionarioOrdenado[string, lista.Lista[vuelo]]
+	vuelosFecha  diccionario.DiccionarioOrdenado[string, diccionario.DiccionarioOrdenado[int, vuelo]]
 }
 type vuelo struct {
 	numeroVuelo   int
@@ -35,7 +35,7 @@ func cmpInt(a, b int) int {
 }
 func CrearTablero() *TableroImpl {
 	vuelosCodigo := diccionario.CrearHash[int, vuelo]()
-	vuelosFecha := diccionario.CrearABB[string, lista.Lista[vuelo]](strings.Compare)
+	vuelosFecha := diccionario.CrearABB[string, diccionario.DiccionarioOrdenado[int, vuelo]](strings.Compare)
 
 	return &TableroImpl{vuelosCodigo: vuelosCodigo, vuelosFecha: vuelosFecha}
 }
@@ -63,29 +63,35 @@ func (t *TableroImpl) AgregarArchivo(archivo string) {
 		if t.vuelosCodigo.Pertenece(datosVuelo.numeroVuelo) {
 			info := t.vuelosCodigo.Obtener(datosVuelo.numeroVuelo)
 			vuelosEnEsaFecha := t.vuelosFecha.Obtener(info.fecha)
-			for iter := vuelosEnEsaFecha.Iterador(); iter.HaySiguiente(); iter.Siguiente(){
-				valor := iter.VerActual()
-				if valor.numeroVuelo == datosVuelo.numeroVuelo{
-					iter.Borrar()
-					break
-				}
+			if vuelosEnEsaFecha.Pertenece(datosVuelo.numeroVuelo) {
+				vuelosEnEsaFecha.Borrar(datosVuelo.numeroVuelo)
 			}
 			t.vuelosCodigo.Borrar(datosVuelo.numeroVuelo)
 		}
-		var vuelosParaEsaFecha lista.Lista[vuelo]
+		var vuelosParaEsaFecha diccionario.DiccionarioOrdenado[int, vuelo]
 		if t.vuelosFecha.Pertenece(datosVuelo.fecha) {
 			vuelosParaEsaFecha = t.vuelosFecha.Obtener(datosVuelo.fecha)
 		} else {
-			vuelosParaEsaFecha = lista.CrearListaEnlazada[vuelo]()
+			vuelosParaEsaFecha = diccionario.CrearABB[int, vuelo](cmpInt)
 			t.vuelosFecha.Guardar(datosVuelo.fecha, vuelosParaEsaFecha)
 		}
-		vuelosParaEsaFecha.InsertarPrimero(datosVuelo)
+		vuelosParaEsaFecha.Guardar(datosVuelo.numeroVuelo, datosVuelo)
 		t.vuelosCodigo.Guardar(datosVuelo.numeroVuelo, datosVuelo)
 	}
 }
 
 func (t *TableroImpl) VerTablero(k int, modo string, desde string, hasta string) {
-	if k <= 0 || hasta < desde || (modo != "asc" && modo != "desc"){
+	if k <= 0 {
+		fmt.Fprintf(os.Stderr, "Error en comando ver_tablero")
+		return
+	}
+
+	if modo != "asc" && modo != "desc" {
+		fmt.Fprintf(os.Stderr, "Error en comando ver_tablero")
+		return
+	}
+
+	if hasta < desde {
 		fmt.Fprintf(os.Stderr, "Error en comando ver_tablero")
 		return
 	}
@@ -94,7 +100,7 @@ func (t *TableroImpl) VerTablero(k int, modo string, desde string, hasta string)
 	for iter := t.vuelosFecha.IteradorRango(&desde, &hasta); iter.HaySiguiente() && contador < k; iter.Siguiente() {
 		_, valor := iter.VerActual()
 		for iter2 := valor.Iterador(); iter2.HaySiguiente() && contador < k; iter2.Siguiente() {
-			datosVuelo := iter2.VerActual()
+			_, datosVuelo := iter2.VerActual()
 			if modo == "desc" {
 				pilaAux.Apilar(datosVuelo)
 			} else {
@@ -163,8 +169,8 @@ func (t *TableroImpl) PrioridadVuelos(k int) {
 func (t *TableroImpl) SiguienteVuelo(origen, destino, fecha string) {
 	for iter := t.vuelosFecha.IteradorRango(&fecha, nil); iter.HaySiguiente(); iter.Siguiente() {
 		_, valor := iter.VerActual()
-			for iter2 := valor.Iterador(); iter2.HaySiguiente(); iter2.Siguiente() {
-			datosVuelo := iter2.VerActual()
+		for iter2 := valor.Iterador(); iter2.HaySiguiente(); iter2.Siguiente() {
+			_, datosVuelo := iter2.VerActual()
 			if datosVuelo.destino == destino && datosVuelo.origen == origen {
 				t.InfoVuelo(datosVuelo.numeroVuelo)
 				fmt.Println("OK")
@@ -181,13 +187,17 @@ func (t *TableroImpl) Borrar(desde, hasta string) {
 		fmt.Fprintf(os.Stderr, "Error en comando borrar")
 	}
 	for iter := t.vuelosFecha.IteradorRango(&desde, &hasta); iter.HaySiguiente(); iter.Siguiente() {
-		fecha, valor := iter.VerActual()
-		for !valor.EstaVacia(){
-			vueloInfo := valor.VerPrimero()
-			valor.BorrarPrimero()
-			t.InfoVuelo(vueloInfo.numeroVuelo)
-			t.vuelosCodigo.Borrar(vueloInfo.numeroVuelo)
+		_, valor := iter.VerActual()
+		for iter2 := valor.Iterador(); iter2.HaySiguiente(); iter2.Siguiente() {
+			_, datosVuelo := iter2.VerActual()
+			diccCodigosFecha := t.vuelosFecha.Obtener(datosVuelo.fecha)
+			if diccCodigosFecha.Cantidad() > 0 {
+				diccCodigosFecha.Borrar(datosVuelo.numeroVuelo)
+			} else {
+				t.vuelosFecha.Borrar(datosVuelo.fecha)
+			}
+			t.InfoVuelo(datosVuelo.numeroVuelo)
+			t.vuelosCodigo.Borrar(datosVuelo.numeroVuelo)
 		}
-		t.vuelosFecha.Borrar(fecha)
 	}
 }

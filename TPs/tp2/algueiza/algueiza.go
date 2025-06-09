@@ -45,9 +45,7 @@ func cmpClaveVuelo(a, b claveVuelo) int {
 	return strings.Compare(aCadena, bCadena)
 }
 
-func cmpInt(a, b int) int {
-	return b - a
-}
+
 func CrearTablero() *TableroImpl {
 	vuelosCodigo := diccionario.CrearHash[int, vuelo]()
 	vuelosFecha := diccionario.CrearABB[claveVuelo, vuelo](cmpClaveVuelo)
@@ -170,13 +168,11 @@ func (t *TableroImpl) SiguienteVuelo(origen, destino, fecha string) {
 		_, datos := iter.VerActual()
 		if datos.destino == destino && datos.origen == origen {
 			t.InfoVuelo(datos.numeroVuelo)
-			fmt.Println("OK")
 			return
 		}
 		
 	}
 	fmt.Printf("No hay vuelo registrado desde %s hacia %s desde %s\n", origen, destino, fecha)
-	fmt.Println("OK")
 }
 
 func (t *TableroImpl) Borrar(desde, hasta string) {

@@ -24,13 +24,12 @@ func main() {
 				fmt.Fprintln(os.Stderr, "Error en comando agregar_archivo")
 				continue
 			}
-			//esto lo podriamos hacer de otra forma. basicamente verifico si se puede abrir el archivo, tipo si existe el archivo y bla.
 			if _, err := os.Stat(comando[1]); err != nil {
 				fmt.Fprintln(os.Stderr, "Error en comando agregar_archivo")
 				continue
 			}
 			tablero.AgregarArchivo(comando[1])
-			fmt.Println("OK")
+			fmt.Println("OK1")
 
 		case "ver_tablero":
 			if len(comando) != 5 {
@@ -39,7 +38,7 @@ func main() {
 			}
 			k, _ := strconv.Atoi(comando[1])
 			tablero.VerTablero(k, comando[2], comando[3], comando[4])
-			fmt.Println("OK")
+			fmt.Println("OK2")
 
 		case "info_vuelo":
 			if len(comando) != 2 {
@@ -51,7 +50,7 @@ func main() {
 			if err != nil {
 				fmt.Fprintln(os.Stderr, "Error en comando info_vuelo")
 			} else {
-				fmt.Println("OK")
+				fmt.Println("OK3")
 			}
 
 		case "prioridad_vuelos":
@@ -65,7 +64,7 @@ func main() {
 				continue
 			}
 			tablero.PrioridadVuelos(k)
-			fmt.Println("OK")
+			fmt.Println("OK4")
 
 		case "siguiente_vuelo":
 			if len(comando) != 4 {
@@ -73,6 +72,7 @@ func main() {
 				continue
 			}
 			tablero.SiguienteVuelo(comando[1], comando[2], comando[3])
+			fmt.Println("OK5")
 
 		case "borrar":
 			if len(comando) != 3 {
@@ -80,7 +80,7 @@ func main() {
 				continue
 			}
 			tablero.Borrar(comando[1], comando[2])
-			fmt.Println("OK")
+			fmt.Println("OK6")
 		default:
 			fmt.Println("Comando no valido, vuelva a ingresar una de las opciones mostradas")
 		}

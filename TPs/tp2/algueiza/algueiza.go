@@ -84,10 +84,9 @@ func (t *TableroImpl) AgregarArchivo(archivo string) {
 	}
 }
 
-func (t *TableroImpl) VerTablero(k int, modo string, desde string, hasta string) {
+func (t *TableroImpl) VerTablero(k int, modo string, desde string, hasta string) error {
 	if k <= 0 || hasta < desde || (modo != "asc" && modo != "desc"){
-		fmt.Fprintf(os.Stderr, "Error en comando ver_tablero\n")
-		return
+		return errors.New("Error en comando ver_tablero\n")
 	}
 	pilaAux := pila.CrearPilaDinamica[vuelo]()
 	contador := 0
@@ -99,13 +98,13 @@ func (t *TableroImpl) VerTablero(k int, modo string, desde string, hasta string)
 			fmt.Printf("%s - %d\n", datos.fecha, datos.numeroVuelo)
 			contador++
 		}
-		
 	}
 	for !pilaAux.EstaVacia() && contador < k {
 		valor := pilaAux.Desapilar()
 		fmt.Printf("%s - %d\n", valor.fecha, valor.numeroVuelo)
 		contador++
 	}
+	return nil
 }
 
 func (t *TableroImpl) InfoVuelo(codigo int) error {
@@ -175,10 +174,10 @@ func (t *TableroImpl) SiguienteVuelo(origen, destino, fecha string) {
 	fmt.Printf("No hay vuelo registrado desde %s hacia %s desde %s\n", origen, destino, fecha)
 }
 
-func (t *TableroImpl) Borrar(desde, hasta string) {
+func (t *TableroImpl) Borrar(desde, hasta string) error {
 	if desde > hasta {
-		fmt.Fprintf(os.Stderr, "Error en comando borrar\n")
-		return
+		return errors.New("Error en comando borrar\n")
+		
 	}
 	iter := t.vuelosFecha.IteradorRango(&claveVuelo{fecha: desde}, &claveVuelo{fecha: hasta})
 	for iter.HaySiguiente(){
@@ -188,4 +187,5 @@ func (t *TableroImpl) Borrar(desde, hasta string) {
 		t.InfoVuelo(datos.numeroVuelo)
 		t.vuelosCodigo.Borrar(datos.numeroVuelo)
 	}
+	return nil
 }

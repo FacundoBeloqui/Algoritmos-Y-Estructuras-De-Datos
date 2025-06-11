@@ -29,7 +29,7 @@ func main() {
 				continue
 			}
 			tablero.AgregarArchivo(comando[1])
-			fmt.Println("OK1")
+			fmt.Println("OK")
 
 		case "ver_tablero":
 			if len(comando) != 5 {
@@ -37,8 +37,13 @@ func main() {
 				continue
 			}
 			k, _ := strconv.Atoi(comando[1])
-			tablero.VerTablero(k, comando[2], comando[3], comando[4])
-			fmt.Println("OK2")
+			err := tablero.VerTablero(k, comando[2], comando[3], comando[4])
+			if err != nil {
+				fmt.Fprintln(os.Stderr, err)
+			} else {
+				fmt.Println("OK")
+			}
+			
 
 		case "info_vuelo":
 			if len(comando) != 2 {
@@ -48,9 +53,9 @@ func main() {
 			codigo, _ := strconv.Atoi(comando[1])
 			err := tablero.InfoVuelo(codigo)
 			if err != nil {
-				fmt.Fprintln(os.Stderr, "Error en comando info_vuelo")
+				fmt.Fprintln(os.Stderr, err)
 			} else {
-				fmt.Println("OK3")
+				fmt.Println("OK")
 			}
 
 		case "prioridad_vuelos":
@@ -64,7 +69,7 @@ func main() {
 				continue
 			}
 			tablero.PrioridadVuelos(k)
-			fmt.Println("OK4")
+			fmt.Println("OK")
 
 		case "siguiente_vuelo":
 			if len(comando) != 4 {
@@ -72,15 +77,19 @@ func main() {
 				continue
 			}
 			tablero.SiguienteVuelo(comando[1], comando[2], comando[3])
-			fmt.Println("OK5")
-
+			fmt.Println("OK")
+			
 		case "borrar":
 			if len(comando) != 3 {
 				fmt.Fprintln(os.Stderr, "Error en comando borrar")
 				continue
 			}
-			tablero.Borrar(comando[1], comando[2])
-			fmt.Println("OK6")
+			err := tablero.Borrar(comando[1], comando[2])
+			if err != nil {
+				fmt.Fprintln(os.Stderr, err)
+			} else {
+				fmt.Println("OK")
+			}
 		default:
 			fmt.Println("Comando no valido, vuelva a ingresar una de las opciones mostradas")
 		}

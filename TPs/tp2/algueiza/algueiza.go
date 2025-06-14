@@ -52,6 +52,7 @@ func CrearTablero() *TableroImpl {
 
 	return &TableroImpl{vuelosCodigo: vuelosCodigo, vuelosFecha: vuelosFecha}
 }
+
 func procesarDatos(datos []string) vuelo {
 	numeroVuelo, _ := strconv.Atoi(datos[0])
 	fecha := datos[6]
@@ -59,8 +60,22 @@ func procesarDatos(datos []string) vuelo {
 	atraso, _ := strconv.Atoi(datos[7])
 	tiempoDeVuelo, _ := strconv.Atoi(datos[8])
 	cancelado, _ := strconv.Atoi(datos[9])
-	return vuelo{numeroVuelo: numeroVuelo, aerolinea: datos[1], origen: datos[2], destino: datos[3], matricula: datos[4], prioridad: prioridad, fecha: fecha, atraso: atraso, tiempoDeVuelo: tiempoDeVuelo, cancelado: cancelado}
+
+	vueloProcesado := vuelo{
+		numeroVuelo:   numeroVuelo,
+		aerolinea:     datos[1],
+		origen:        datos[2],
+		destino:       datos[3],
+		matricula:     datos[4],
+		prioridad:     prioridad,
+		fecha:         fecha,
+		atraso:        atraso,
+		tiempoDeVuelo: tiempoDeVuelo,
+		cancelado:     cancelado,
+	}
+	return vueloProcesado
 }
+
 func (t *TableroImpl) AgregarArchivo(archivo string) {
 	file, err := os.Open(archivo)
 	if err != nil {
@@ -175,17 +190,20 @@ func (t *TableroImpl) SiguienteVuelo(origen, destino, fecha string) {
 }
 
 func (t *TableroImpl) Borrar(desde, hasta string) error {
-	if desde > hasta {
-		return errors.New("Error en comando borrar\n")
-		
-	}
-	iter := t.vuelosFecha.IteradorRango(&claveVuelo{fecha: desde}, &claveVuelo{fecha: hasta})
-	for iter.HaySiguiente(){
-		clave, datos := iter.VerActual()
-		iter.Siguiente()
-		t.vuelosFecha.Borrar(clave)
+    if desde > hasta {
+        return errors.New("Error en comando borrar\n")
+    }
+    
+    iter := t.vuelosFecha.IteradorRango(&claveVuelo{fecha: desde}, nil)
+    for iter.HaySiguiente() {
+        clave, datos := iter.VerActual()
+        if clave.fecha > hasta {
+            break
+        }
+        iter.Siguiente()
+        t.vuelosFecha.Borrar(clave)
 		t.InfoVuelo(datos.numeroVuelo)
-		t.vuelosCodigo.Borrar(datos.numeroVuelo)
-	}
-	return nil
+        t.vuelosCodigo.Borrar(datos.numeroVuelo)
+    }
+    return nil
 }

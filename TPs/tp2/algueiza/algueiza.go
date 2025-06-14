@@ -100,13 +100,17 @@ func (t *TableroImpl) AgregarArchivo(archivo string) {
 }
 
 func (t *TableroImpl) VerTablero(k int, modo string, desde string, hasta string) error {
-	if k <= 0 || hasta < desde || (modo != "asc" && modo != "desc"){
-		return errors.New("Error en comando ver_tablero\n")
+	if k <= 0 || hasta < desde || (modo != "asc" && modo != "desc") {
+		return errors.New("Error en comando ver_tablero")
 	}
 	pilaAux := pila.CrearPilaDinamica[vuelo]()
 	contador := 0
-	for iter := t.vuelosFecha.IteradorRango(&claveVuelo{fecha: desde}, &claveVuelo{fecha: hasta}); iter.HaySiguiente() && contador < k; iter.Siguiente() {
-		_, datos := iter.VerActual()
+	
+	for iter := t.vuelosFecha.IteradorRango(&claveVuelo{fecha: desde}, nil); iter.HaySiguiente() && contador < k ; iter.Siguiente(){
+		clave, datos := iter.VerActual()
+		if clave.fecha > hasta {
+			break
+		}
 		if modo == "desc" {
 			pilaAux.Apilar(datos)
 		} else {
@@ -114,10 +118,12 @@ func (t *TableroImpl) VerTablero(k int, modo string, desde string, hasta string)
 			contador++
 		}
 	}
-	for !pilaAux.EstaVacia() && contador < k {
-		valor := pilaAux.Desapilar()
-		fmt.Printf("%s - %d\n", valor.fecha, valor.numeroVuelo)
-		contador++
+	if modo == "desc" {
+		for !pilaAux.EstaVacia() && contador < k {
+			valor := pilaAux.Desapilar()
+			fmt.Printf("%s - %d\n", valor.fecha, valor.numeroVuelo)
+			contador++
+		}
 	}
 	return nil
 }
@@ -191,7 +197,7 @@ func (t *TableroImpl) SiguienteVuelo(origen, destino, fecha string) {
 
 func (t *TableroImpl) Borrar(desde, hasta string) error {
     if desde > hasta {
-        return errors.New("Error en comando borrar\n")
+        return errors.New("Error en comando borrar")
     }
     
     iter := t.vuelosFecha.IteradorRango(&claveVuelo{fecha: desde}, nil)

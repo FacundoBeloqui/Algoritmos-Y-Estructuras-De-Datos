@@ -100,11 +100,11 @@ func (tablero *TableroImpl) AgregarArchivo(archivo string) error {
 	return nil
 }
 
-func (tablero *TableroImpl) VerTablero(k int, modo string, desde string, hasta string) ([]string, error) {
+func (tablero *TableroImpl) VerTablero(k int, modo string, desde string, hasta string) ([][]string, error) {
 	if k <= 0 || hasta < desde || (modo != "asc" && modo != "desc") {
 		return nil, errors.New("Error en comando ver_tablero")
 	}
-	var resultado []string
+	var resultado [][]string
 	pilaAux := pila.CrearPilaDinamica[vuelo]()
 	contador := 0
 
@@ -116,7 +116,7 @@ func (tablero *TableroImpl) VerTablero(k int, modo string, desde string, hasta s
 		if modo == "desc" {
 			pilaAux.Apilar(vuelo)
 		} else {
-			linea := fmt.Sprintf("%s - %d", vuelo.fecha, vuelo.numeroVuelo)
+			linea := []string{vuelo.fecha, strconv.Itoa(vuelo.numeroVuelo)}
 			resultado = append(resultado, linea)
 			contador++
 		}
@@ -124,7 +124,7 @@ func (tablero *TableroImpl) VerTablero(k int, modo string, desde string, hasta s
 	if modo == "desc" {
 		for !pilaAux.EstaVacia() && contador < k {
 			valor := pilaAux.Desapilar()
-			linea := fmt.Sprintf("%s - %d", valor.fecha, valor.numeroVuelo)
+			linea := []string{valor.fecha, strconv.Itoa(valor.numeroVuelo)}
 			resultado = append(resultado, linea)
 			contador++
 		}
@@ -210,6 +210,7 @@ func (tablero *TableroImpl) SiguienteVuelo(origen, destino, fecha string) ([]str
 		}
 	}
 	return nil, encontrado
+	//return nil, fmt.Errorf("No hay vuelo registrado desde %s hacia %s desde %s", origen, destino, fecha)
 }
 
 func (tablero *TableroImpl) Borrar(desde, hasta string) ([]string, error) {

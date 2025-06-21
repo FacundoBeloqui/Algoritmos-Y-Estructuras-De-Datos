@@ -38,7 +38,7 @@ func ProcesarComando(linea string, tablero Tablero) error {
 			return err
 		}
 		for _, linea := range salidas {
-			fmt.Println(linea)
+			fmt.Println(strings.Join(linea, " - "))
 		}
 		return nil
 

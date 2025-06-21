@@ -1,11 +1,51 @@
 package algueiza
 
 import (
+	"bufio"
 	"fmt"
 	"os"
 	"strconv"
 	"strings"
 )
+
+func crearVuelo(datos []string) vuelo {
+	numeroVuelo, _ := strconv.Atoi(datos[0])
+	fecha := datos[6]
+	prioridad, _ := strconv.Atoi(datos[5])
+	atraso, _ := strconv.Atoi(datos[7])
+	tiempoDeVuelo, _ := strconv.Atoi(datos[8])
+	cancelado, _ := strconv.Atoi(datos[9])
+
+	vueloProcesado := vuelo{
+		numeroVuelo:   numeroVuelo,
+		aerolinea:     datos[1],
+		origen:        datos[2],
+		destino:       datos[3],
+		matricula:     datos[4],
+		prioridad:     prioridad,
+		fecha:         fecha,
+		atraso:        atraso,
+		tiempoDeVuelo: tiempoDeVuelo,
+		cancelado:     cancelado,
+	}
+	return vueloProcesado
+}
+func leerArchivo(archivo string, tablero Tablero) error {
+	file, err := os.Open(archivo)
+	if err != nil {
+		return fmt.Errorf("Error en comando agregar_archivo")
+	}
+	defer file.Close()
+
+	s := bufio.NewScanner(file)
+	for s.Scan() {
+		linea := s.Text()
+		datos := strings.Split(linea, ",")
+		vuelo := crearVuelo(datos)
+		tablero.AgregarVuelo(vuelo)
+	}
+	return nil
+}
 
 func ProcesarComando(linea string, tablero Tablero) error {
 	comando := strings.Fields(linea)
@@ -22,7 +62,10 @@ func ProcesarComando(linea string, tablero Tablero) error {
 		if _, err := os.Stat(comando[1]); err != nil {
 			return fmt.Errorf("Error en comando agregar_archivo")
 		}
-		tablero.AgregarArchivo(comando[1])
+		err := leerArchivo(comando[1], tablero)
+		if err != nil {
+			return fmt.Errorf("Error en comando agregar_archivo")
+		}
 		return nil
 
 	case "ver_tablero":

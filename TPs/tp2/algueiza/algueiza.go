@@ -1,13 +1,11 @@
 package algueiza
 
 import (
-	"bufio"
 	"errors"
 	"tdas/cola_prioridad"
 	"tdas/pila"
 
 	"fmt"
-	"os"
 	"strconv"
 	"strings"
 	"tdas/diccionario"
@@ -52,52 +50,17 @@ func CrearTablero() *TableroImpl {
 	return &TableroImpl{vuelosCodigo: vuelosCodigo, vuelosFecha: vuelosFecha}
 }
 
-func procesarDatos(datos []string) vuelo {
-	numeroVuelo, _ := strconv.Atoi(datos[0])
-	fecha := datos[6]
-	prioridad, _ := strconv.Atoi(datos[5])
-	atraso, _ := strconv.Atoi(datos[7])
-	tiempoDeVuelo, _ := strconv.Atoi(datos[8])
-	cancelado, _ := strconv.Atoi(datos[9])
+func (tablero *TableroImpl) AgregarVuelo(vuelo vuelo) {
+	clave := claveVuelo{fecha: vuelo.fecha, numeroVuelo: vuelo.numeroVuelo}
 
-	vueloProcesado := vuelo{
-		numeroVuelo:   numeroVuelo,
-		aerolinea:     datos[1],
-		origen:        datos[2],
-		destino:       datos[3],
-		matricula:     datos[4],
-		prioridad:     prioridad,
-		fecha:         fecha,
-		atraso:        atraso,
-		tiempoDeVuelo: tiempoDeVuelo,
-		cancelado:     cancelado,
+	if tablero.vuelosCodigo.Pertenece(vuelo.numeroVuelo) {
+		info := tablero.vuelosCodigo.Obtener(vuelo.numeroVuelo)
+		tablero.vuelosFecha.Borrar(claveVuelo{info.fecha, info.numeroVuelo})
+		tablero.vuelosCodigo.Borrar(vuelo.numeroVuelo)
 	}
-	return vueloProcesado
-}
+	tablero.vuelosFecha.Guardar(clave, vuelo)
+	tablero.vuelosCodigo.Guardar(vuelo.numeroVuelo, vuelo)
 
-func (tablero *TableroImpl) AgregarArchivo(archivo string) error {
-	file, err := os.Open(archivo)
-	if err != nil {
-		return fmt.Errorf("Error en comando agregar_archivo")
-	}
-	defer file.Close()
-
-	s := bufio.NewScanner(file)
-	for s.Scan() {
-		linea := s.Text()
-		datos := strings.Split(linea, ",")
-		vuelo := procesarDatos(datos)
-		clave := claveVuelo{fecha: vuelo.fecha, numeroVuelo: vuelo.numeroVuelo}
-
-		if tablero.vuelosCodigo.Pertenece(vuelo.numeroVuelo) {
-			info := tablero.vuelosCodigo.Obtener(vuelo.numeroVuelo)
-			tablero.vuelosFecha.Borrar(claveVuelo{info.fecha, info.numeroVuelo})
-			tablero.vuelosCodigo.Borrar(vuelo.numeroVuelo)
-		}
-		tablero.vuelosFecha.Guardar(clave, vuelo)
-		tablero.vuelosCodigo.Guardar(vuelo.numeroVuelo, vuelo)
-	}
-	return nil
 }
 
 func (tablero *TableroImpl) VerTablero(k int, modo string, desde string, hasta string) ([][]string, error) {

@@ -1,10 +1,10 @@
 package algueiza
 
 type Tablero interface {
-	AgregarArchivo(string)
-	VerTablero(int, string, string, string)
-	InfoVuelo(int)
-	PrioridadVuelos(int)
-	SiguienteVuelo(string, string, string)
-	Borrar(string)
+	AgregarArchivo(string) error
+	VerTablero(int, string, string, string) ([]string, error)
+	InfoVuelo(int) ([]string, error)
+	PrioridadVuelos(int) []string
+	SiguienteVuelo(string, string, string) ([]string, bool)
+	Borrar(string, string) ([]string, error)
 }

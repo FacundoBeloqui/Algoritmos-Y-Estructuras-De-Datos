@@ -75,19 +75,20 @@ func procesarDatos(datos []string) vuelo {
 	return vueloProcesado
 }
 
-func (tablero *TableroImpl) AgregarArchivo(archivo string) {
+func (tablero *TableroImpl) AgregarArchivo(archivo string) error {
 	file, err := os.Open(archivo)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Error en comando agregar_archivo")
-		return
+		return fmt.Errorf("Error en comando agregar_archivo")
 	}
 	defer file.Close()
+
 	s := bufio.NewScanner(file)
 	for s.Scan() {
 		linea := s.Text()
 		datos := strings.Split(linea, ",")
 		vuelo := procesarDatos(datos)
 		clave := claveVuelo{fecha: vuelo.fecha, numeroVuelo: vuelo.numeroVuelo}
+
 		if tablero.vuelosCodigo.Pertenece(vuelo.numeroVuelo) {
 			info := tablero.vuelosCodigo.Obtener(vuelo.numeroVuelo)
 			tablero.vuelosFecha.Borrar(claveVuelo{info.fecha, info.numeroVuelo})
@@ -96,6 +97,7 @@ func (tablero *TableroImpl) AgregarArchivo(archivo string) {
 		tablero.vuelosFecha.Guardar(clave, vuelo)
 		tablero.vuelosCodigo.Guardar(vuelo.numeroVuelo, vuelo)
 	}
+	return nil
 }
 
 func (tablero *TableroImpl) VerTablero(k int, modo string, desde string, hasta string) ([]string, error) {
@@ -130,15 +132,24 @@ func (tablero *TableroImpl) VerTablero(k int, modo string, desde string, hasta s
 	return resultado, nil
 }
 
-func (tablero *TableroImpl) InfoVuelo(codigo int) error {
+func (tablero *TableroImpl) InfoVuelo(codigo int) ([]string, error) {
 	if !tablero.vuelosCodigo.Pertenece(codigo) {
-		return errors.New("Error en comando info_vuelo")
+		return nil, errors.New("Error en comando info_vuelo")
 	}
 	vuelo := tablero.vuelosCodigo.Obtener(codigo)
-	fmt.Printf("%d %s %s %s %s %d %s %d %d %d\n",
-		vuelo.numeroVuelo, vuelo.aerolinea, vuelo.origen, vuelo.destino,
-		vuelo.matricula, vuelo.prioridad, vuelo.fecha, vuelo.atraso, vuelo.tiempoDeVuelo, vuelo.cancelado)
-	return nil
+
+	return []string{
+		strconv.Itoa(vuelo.numeroVuelo),
+		vuelo.aerolinea,
+		vuelo.origen,
+		vuelo.destino,
+		vuelo.matricula,
+		strconv.Itoa(vuelo.prioridad),
+		vuelo.fecha,
+		strconv.Itoa(vuelo.atraso),
+		strconv.Itoa(vuelo.tiempoDeVuelo),
+		strconv.Itoa(vuelo.cancelado),
+	}, nil
 }
 
 func cmp(a, b vuelo) int {
@@ -171,7 +182,7 @@ func TopK(arreglo []vuelo, k int) []vuelo {
 	}
 	return top
 }
-func (tablero *TableroImpl) PrioridadVuelos(k int) {
+func (tablero *TableroImpl) PrioridadVuelos(k int) []string {
 	arreglo := make([]vuelo, tablero.vuelosCodigo.Cantidad())
 	i := 0
 	for iter := tablero.vuelosCodigo.Iterador(); iter.HaySiguiente(); iter.Siguiente() {
@@ -180,38 +191,47 @@ func (tablero *TableroImpl) PrioridadVuelos(k int) {
 		i++
 	}
 	topVuelos := TopK(arreglo, k)
+
+	var resultado []string
 	for _, elem := range topVuelos {
-		fmt.Printf("%d - %d\n", elem.prioridad, elem.numeroVuelo)
+		resultado = append(resultado, fmt.Sprintf("%d - %d", elem.prioridad, elem.numeroVuelo))
 	}
+	return resultado
 }
 
-func (tablero *TableroImpl) SiguienteVuelo(origen, destino, fecha string) {
+func (tablero *TableroImpl) SiguienteVuelo(origen, destino, fecha string) ([]string, bool) {
+	encontrado := false
 	for iter := tablero.vuelosFecha.IteradorRango(&claveVuelo{fecha: fecha}, nil); iter.HaySiguiente(); iter.Siguiente() {
 		_, vuelo := iter.VerActual()
 		if vuelo.destino == destino && vuelo.origen == origen {
-			tablero.InfoVuelo(vuelo.numeroVuelo)
-			return
+			encontrado = true
+			info, _ := tablero.InfoVuelo(vuelo.numeroVuelo)
+			return info, encontrado
 		}
-
 	}
-	fmt.Printf("No hay vuelo registrado desde %s hacia %s desde %s\n", origen, destino, fecha)
+	return nil, encontrado
 }
 
-func (tablero *TableroImpl) Borrar(desde, hasta string) error {
+func (tablero *TableroImpl) Borrar(desde, hasta string) ([]string, error) {
 	if desde > hasta {
-		return errors.New("Error en comando borrar")
+		return nil, errors.New("Error en comando borrar")
 	}
-
+	var resultados []string
 	iter := tablero.vuelosFecha.IteradorRango(&claveVuelo{fecha: desde}, nil)
+
 	for iter.HaySiguiente() {
 		clave, vuelo := iter.VerActual()
 		if clave.fecha > hasta {
 			break
 		}
+
+		info, _ := tablero.InfoVuelo(vuelo.numeroVuelo)
+		resultados = append(resultados, strings.Join(info, " "))
+
 		iter.Siguiente()
 		tablero.vuelosFecha.Borrar(clave)
-		tablero.InfoVuelo(vuelo.numeroVuelo)
 		tablero.vuelosCodigo.Borrar(vuelo.numeroVuelo)
 	}
-	return nil
+
+	return resultados, nil
 }

@@ -37,13 +37,15 @@ func main() {
 				continue
 			}
 			k, _ := strconv.Atoi(comando[1])
-			err := tablero.VerTablero(k, comando[2], comando[3], comando[4])
+			salidas, err := tablero.VerTablero(k, comando[2], comando[3], comando[4])
 			if err != nil {
 				fmt.Fprintln(os.Stderr, err)
 			} else {
+				for _, linea := range salidas {
+					fmt.Println(linea)
+				}
 				fmt.Println("OK")
 			}
-			
 
 		case "info_vuelo":
 			if len(comando) != 2 {
@@ -78,7 +80,7 @@ func main() {
 			}
 			tablero.SiguienteVuelo(comando[1], comando[2], comando[3])
 			fmt.Println("OK")
-			
+
 		case "borrar":
 			if len(comando) != 3 {
 				fmt.Fprintln(os.Stderr, "Error en comando borrar")

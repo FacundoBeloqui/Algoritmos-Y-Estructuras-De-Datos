@@ -98,10 +98,11 @@ func (tablero *TableroImpl) AgregarArchivo(archivo string) {
 	}
 }
 
-func (tablero *TableroImpl) VerTablero(k int, modo string, desde string, hasta string) error {
+func (tablero *TableroImpl) VerTablero(k int, modo string, desde string, hasta string) ([]string, error) {
 	if k <= 0 || hasta < desde || (modo != "asc" && modo != "desc") {
-		return errors.New("Error en comando ver_tablero")
+		return nil, errors.New("Error en comando ver_tablero")
 	}
+	var resultado []string
 	pilaAux := pila.CrearPilaDinamica[vuelo]()
 	contador := 0
 
@@ -113,18 +114,20 @@ func (tablero *TableroImpl) VerTablero(k int, modo string, desde string, hasta s
 		if modo == "desc" {
 			pilaAux.Apilar(vuelo)
 		} else {
-			fmt.Printf("%s - %d\n", vuelo.fecha, vuelo.numeroVuelo)
+			linea := fmt.Sprintf("%s - %d", vuelo.fecha, vuelo.numeroVuelo)
+			resultado = append(resultado, linea)
 			contador++
 		}
 	}
 	if modo == "desc" {
 		for !pilaAux.EstaVacia() && contador < k {
 			valor := pilaAux.Desapilar()
-			fmt.Printf("%s - %d\n", valor.fecha, valor.numeroVuelo)
+			linea := fmt.Sprintf("%s - %d", valor.fecha, valor.numeroVuelo)
+			resultado = append(resultado, linea)
 			contador++
 		}
 	}
-	return nil
+	return resultado, nil
 }
 
 func (tablero *TableroImpl) InfoVuelo(codigo int) error {

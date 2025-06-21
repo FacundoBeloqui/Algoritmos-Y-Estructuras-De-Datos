@@ -1,4 +1,4 @@
-package algueiza
+package aeropuerto
 
 import (
 	"bufio"
@@ -75,7 +75,7 @@ func procesarDatos(datos []string) vuelo {
 	return vueloProcesado
 }
 
-func (tablero *TableroImpl) AgregarArchivo(archivo string) {
+func (t *TableroImpl) AgregarArchivo(archivo string) {
 	file, err := os.Open(archivo)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error en comando agregar_archivo")
@@ -86,34 +86,34 @@ func (tablero *TableroImpl) AgregarArchivo(archivo string) {
 	for s.Scan() {
 		linea := s.Text()
 		datos := strings.Split(linea, ",")
-		vuelo := procesarDatos(datos)
-		clave := claveVuelo{fecha: vuelo.fecha, numeroVuelo: vuelo.numeroVuelo}
-		if tablero.vuelosCodigo.Pertenece(vuelo.numeroVuelo) {
-			info := tablero.vuelosCodigo.Obtener(vuelo.numeroVuelo)
-			tablero.vuelosFecha.Borrar(claveVuelo{info.fecha, info.numeroVuelo})
-			tablero.vuelosCodigo.Borrar(vuelo.numeroVuelo)
+		datosVuelo := procesarDatos(datos)
+		clave := claveVuelo{fecha: datosVuelo.fecha, numeroVuelo: datosVuelo.numeroVuelo}
+		if t.vuelosCodigo.Pertenece(datosVuelo.numeroVuelo) {
+			info := t.vuelosCodigo.Obtener(datosVuelo.numeroVuelo)
+			t.vuelosFecha.Borrar(claveVuelo{info.fecha, info.numeroVuelo})
+			t.vuelosCodigo.Borrar(datosVuelo.numeroVuelo)
 		}
-		tablero.vuelosFecha.Guardar(clave, vuelo)
-		tablero.vuelosCodigo.Guardar(vuelo.numeroVuelo, vuelo)
+		t.vuelosFecha.Guardar(clave, datosVuelo)
+		t.vuelosCodigo.Guardar(datosVuelo.numeroVuelo, datosVuelo)
 	}
 }
 
-func (tablero *TableroImpl) VerTablero(k int, modo string, desde string, hasta string) error {
+func (t *TableroImpl) VerTablero(k int, modo string, desde string, hasta string) error {
 	if k <= 0 || hasta < desde || (modo != "asc" && modo != "desc") {
 		return errors.New("Error en comando ver_tablero")
 	}
 	pilaAux := pila.CrearPilaDinamica[vuelo]()
 	contador := 0
 
-	for iter := tablero.vuelosFecha.IteradorRango(&claveVuelo{fecha: desde}, nil); iter.HaySiguiente() && contador < k; iter.Siguiente() {
-		clave, vuelo := iter.VerActual()
+	for iter := t.vuelosFecha.IteradorRango(&claveVuelo{fecha: desde}, nil); iter.HaySiguiente() && contador < k; iter.Siguiente() {
+		clave, datos := iter.VerActual()
 		if clave.fecha > hasta {
 			break
 		}
 		if modo == "desc" {
-			pilaAux.Apilar(vuelo)
+			pilaAux.Apilar(datos)
 		} else {
-			fmt.Printf("%s - %d\n", vuelo.fecha, vuelo.numeroVuelo)
+			fmt.Printf("%s - %d\n", datos.fecha, datos.numeroVuelo)
 			contador++
 		}
 	}
@@ -127,14 +127,14 @@ func (tablero *TableroImpl) VerTablero(k int, modo string, desde string, hasta s
 	return nil
 }
 
-func (tablero *TableroImpl) InfoVuelo(codigo int) error {
-	if !tablero.vuelosCodigo.Pertenece(codigo) {
+func (t *TableroImpl) InfoVuelo(codigo int) error {
+	if !t.vuelosCodigo.Pertenece(codigo) {
 		return errors.New("Error en comando info_vuelo")
 	}
-	vuelo := tablero.vuelosCodigo.Obtener(codigo)
+	datos := t.vuelosCodigo.Obtener(codigo)
 	fmt.Printf("%d %s %s %s %s %d %s %d %d %d\n",
-		vuelo.numeroVuelo, vuelo.aerolinea, vuelo.origen, vuelo.destino,
-		vuelo.matricula, vuelo.prioridad, vuelo.fecha, vuelo.atraso, vuelo.tiempoDeVuelo, vuelo.cancelado)
+		datos.numeroVuelo, datos.aerolinea, datos.origen, datos.destino,
+		datos.matricula, datos.prioridad, datos.fecha, datos.atraso, datos.tiempoDeVuelo, datos.cancelado)
 	return nil
 }
 
@@ -156,37 +156,37 @@ func cmp(a, b vuelo) int {
 	}
 }
 
-func TopK(arreglo []vuelo, k int) []vuelo {
-	if k > len(arreglo) {
-		k = len(arreglo)
+func TopK(arr []vuelo, k int) []vuelo {
+	if k > len(arr) {
+		k = len(arr)
 	}
-	heap := cola_prioridad.CrearHeapArr(arreglo, cmp)
+	cp := cola_prioridad.CrearHeapArr(arr, cmp)
 	top := make([]vuelo, k)
 
 	for i := 0; i < k; i++ {
-		top[i] = heap.Desencolar()
+		top[i] = cp.Desencolar()
 	}
 	return top
 }
-func (tablero *TableroImpl) PrioridadVuelos(k int) {
-	arreglo := make([]vuelo, tablero.vuelosCodigo.Cantidad())
+func (t *TableroImpl) PrioridadVuelos(k int) {
+	miarr := make([]vuelo, t.vuelosCodigo.Cantidad())
 	i := 0
-	for iter := tablero.vuelosCodigo.Iterador(); iter.HaySiguiente(); iter.Siguiente() {
-		_, vuelo := iter.VerActual()
-		arreglo[i] = vuelo
+	for iter := t.vuelosCodigo.Iterador(); iter.HaySiguiente(); iter.Siguiente() {
+		_, datos := iter.VerActual()
+		miarr[i] = datos
 		i++
 	}
-	topVuelos := TopK(arreglo, k)
+	topVuelos := TopK(miarr, k)
 	for _, elem := range topVuelos {
 		fmt.Printf("%d - %d\n", elem.prioridad, elem.numeroVuelo)
 	}
 }
 
-func (tablero *TableroImpl) SiguienteVuelo(origen, destino, fecha string) {
-	for iter := tablero.vuelosFecha.IteradorRango(&claveVuelo{fecha: fecha}, nil); iter.HaySiguiente(); iter.Siguiente() {
-		_, vuelo := iter.VerActual()
-		if vuelo.destino == destino && vuelo.origen == origen {
-			tablero.InfoVuelo(vuelo.numeroVuelo)
+func (t *TableroImpl) SiguienteVuelo(origen, destino, fecha string) {
+	for iter := t.vuelosFecha.IteradorRango(&claveVuelo{fecha: fecha}, nil); iter.HaySiguiente(); iter.Siguiente() {
+		_, datos := iter.VerActual()
+		if datos.destino == destino && datos.origen == origen {
+			t.InfoVuelo(datos.numeroVuelo)
 			return
 		}
 
@@ -194,21 +194,21 @@ func (tablero *TableroImpl) SiguienteVuelo(origen, destino, fecha string) {
 	fmt.Printf("No hay vuelo registrado desde %s hacia %s desde %s\n", origen, destino, fecha)
 }
 
-func (tablero *TableroImpl) Borrar(desde, hasta string) error {
+func (t *TableroImpl) Borrar(desde, hasta string) error {
 	if desde > hasta {
 		return errors.New("Error en comando borrar")
 	}
 
-	iter := tablero.vuelosFecha.IteradorRango(&claveVuelo{fecha: desde}, nil)
+	iter := t.vuelosFecha.IteradorRango(&claveVuelo{fecha: desde}, nil)
 	for iter.HaySiguiente() {
-		clave, vuelo := iter.VerActual()
+		clave, datos := iter.VerActual()
 		if clave.fecha > hasta {
 			break
 		}
 		iter.Siguiente()
-		tablero.vuelosFecha.Borrar(clave)
-		tablero.InfoVuelo(vuelo.numeroVuelo)
-		tablero.vuelosCodigo.Borrar(vuelo.numeroVuelo)
+		t.vuelosFecha.Borrar(clave)
+		t.InfoVuelo(datos.numeroVuelo)
+		t.vuelosCodigo.Borrar(datos.numeroVuelo)
 	}
 	return nil
 }

@@ -115,17 +115,17 @@ func (tablero *TableroImpl) InfoVuelo(codigo int) ([]string, error) {
 	}, nil
 }
 
-func cmp(a, b vuelo) int {
-	if a.prioridad > b.prioridad {
+func (vuelo vuelo) Cmp(otroVuelo vuelo) int {
+	if vuelo.prioridad > otroVuelo.prioridad {
 		return 1
-	} else if a.prioridad < b.prioridad {
+	} else if vuelo.prioridad < otroVuelo.prioridad {
 		return -1
 	} else {
-		aStr := strconv.Itoa(a.numeroVuelo)
-		bStr := strconv.Itoa(b.numeroVuelo)
-		if aStr < bStr {
+		vueloStr := strconv.Itoa(vuelo.numeroVuelo)
+		otroVueloStr := strconv.Itoa(otroVuelo.numeroVuelo)
+		if vueloStr < otroVueloStr {
 			return 1
-		} else if aStr > bStr {
+		} else if vueloStr > otroVueloStr {
 			return -1
 		} else {
 			return 0
@@ -137,7 +137,7 @@ func TopK(arreglo []vuelo, k int) []vuelo {
 	if k > len(arreglo) {
 		k = len(arreglo)
 	}
-	heap := cola_prioridad.CrearHeapArr(arreglo, cmp)
+	heap := cola_prioridad.CrearHeapArr(arreglo, vuelo.Cmp)
 	top := make([]vuelo, k)
 
 	for i := 0; i < k; i++ {
@@ -173,7 +173,6 @@ func (tablero *TableroImpl) SiguienteVuelo(origen, destino, fecha string) ([]str
 		}
 	}
 	return nil, encontrado
-	//return nil, fmt.Errorf("No hay vuelo registrado desde %s hacia %s desde %s", origen, destino, fecha)
 }
 
 func (tablero *TableroImpl) Borrar(desde, hasta string) ([]string, error) {

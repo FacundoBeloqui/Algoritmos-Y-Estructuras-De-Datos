@@ -1,7 +1,7 @@
 package algueiza
 
 type Tablero interface {
-	AgregarVuelo(vuelo) error
+	AgregarVuelo(vuelo)
 	VerTablero(int, string, string, string) ([][]string, error)
 	InfoVuelo(int) ([]string, error)
 	PrioridadVuelos(int) []string

@@ -14,6 +14,7 @@ import (
 type TableroImpl struct {
 	vuelosCodigo diccionario.Diccionario[int, vuelo]
 	vuelosFecha  diccionario.DiccionarioOrdenado[claveVuelo, vuelo]
+	vuelosConexion diccionario.Diccionario[claveConexion, diccionario.DiccionarioOrdenado[claveVuelo, vuelo]]
 }
 type vuelo struct {
 	numeroVuelo   int
@@ -43,24 +44,48 @@ func cmpClaveVuelo(a, b claveVuelo) int {
 	return strings.Compare(aCadena, bCadena)
 }
 
+type claveConexion struct{
+	origen string
+	destino string
+}
+
 func CrearTablero() *TableroImpl {
 	vuelosCodigo := diccionario.CrearHash[int, vuelo]()
 	vuelosFecha := diccionario.CrearABB[claveVuelo, vuelo](cmpClaveVuelo)
+	vuelosConexion := diccionario.CrearHash[claveConexion, diccionario.DiccionarioOrdenado[claveVuelo, vuelo]]()
 
-	return &TableroImpl{vuelosCodigo: vuelosCodigo, vuelosFecha: vuelosFecha}
+	return &TableroImpl{
+		vuelosCodigo: vuelosCodigo, 
+		vuelosFecha: vuelosFecha,
+		vuelosConexion: vuelosConexion,
+	}
 }
 
-func (tablero *TableroImpl) AgregarVuelo(vuelo vuelo) {
-	clave := claveVuelo{fecha: vuelo.fecha, numeroVuelo: vuelo.numeroVuelo}
+func (tablero *TableroImpl) AgregarVuelo(vueloDatos vuelo) {
+	clave := claveVuelo{vueloDatos.fecha, vueloDatos.numeroVuelo}
 
-	if tablero.vuelosCodigo.Pertenece(vuelo.numeroVuelo) {
-		info := tablero.vuelosCodigo.Obtener(vuelo.numeroVuelo)
+	if tablero.vuelosCodigo.Pertenece(vueloDatos.numeroVuelo) {
+		info := tablero.vuelosCodigo.Obtener(vueloDatos.numeroVuelo)
 		tablero.vuelosFecha.Borrar(claveVuelo{info.fecha, info.numeroVuelo})
-		tablero.vuelosCodigo.Borrar(vuelo.numeroVuelo)
+		claveConexion := claveConexion{info.origen, info.destino}
+		
+		abb := tablero.vuelosConexion.Obtener(claveConexion)
+		abb.Borrar(claveVuelo{info.fecha, info.numeroVuelo})
+		
+		tablero.vuelosCodigo.Borrar(vueloDatos.numeroVuelo)
 	}
-	tablero.vuelosFecha.Guardar(clave, vuelo)
-	tablero.vuelosCodigo.Guardar(vuelo.numeroVuelo, vuelo)
+	tablero.vuelosFecha.Guardar(clave, vueloDatos)
+	tablero.vuelosCodigo.Guardar(vueloDatos.numeroVuelo, vueloDatos)
 
+	claveConexion := claveConexion{vueloDatos.origen, vueloDatos.destino}
+	var abb diccionario.DiccionarioOrdenado[claveVuelo, vuelo]
+	if tablero.vuelosConexion.Pertenece(claveConexion){
+		abb = tablero.vuelosConexion.Obtener(claveConexion)
+	} else{
+		abb = diccionario.CrearABB[claveVuelo, vuelo](cmpClaveVuelo)
+	}
+	abb.Guardar(clave, vueloDatos)
+	tablero.vuelosConexion.Guardar(claveConexion, abb)
 }
 
 func (tablero *TableroImpl) VerTablero(k int, modo string, desde string, hasta string) ([][]string, error) {
@@ -163,12 +188,20 @@ func (tablero *TableroImpl) PrioridadVuelos(k int) []string {
 }
 
 func (tablero *TableroImpl) SiguienteVuelo(origen, destino, fecha string) ([]string, bool) {
+	claveConexion := claveConexion{origen, destino}
 	encontrado := false
-	for iter := tablero.vuelosFecha.IteradorRango(&claveVuelo{fecha: fecha}, nil); iter.HaySiguiente(); iter.Siguiente() {
+
+	if !tablero.vuelosConexion.Pertenece(claveConexion){
+		return nil, encontrado
+	}
+	abb := tablero.vuelosConexion.Obtener(claveConexion)
+	for iter := abb.IteradorRango(&claveVuelo{fecha: fecha}, nil); iter.HaySiguiente(); iter.Siguiente(){
 		_, vuelo := iter.VerActual()
-		if vuelo.destino == destino && vuelo.origen == origen {
+		info, err := tablero.InfoVuelo(vuelo.numeroVuelo)
+		if err != nil{
+			return nil, encontrado
+		} else {
 			encontrado = true
-			info, _ := tablero.InfoVuelo(vuelo.numeroVuelo)
 			return info, encontrado
 		}
 	}
@@ -194,6 +227,12 @@ func (tablero *TableroImpl) Borrar(desde, hasta string) ([]string, error) {
 		iter.Siguiente()
 		tablero.vuelosFecha.Borrar(clave)
 		tablero.vuelosCodigo.Borrar(vuelo.numeroVuelo)
+		claveConexion := claveConexion{vuelo.origen, vuelo.destino}
+		if tablero.vuelosConexion.Pertenece(claveConexion) {
+            abb := tablero.vuelosConexion.Obtener(claveConexion)
+            abb.Borrar(clave)
+            tablero.vuelosConexion.Guardar(claveConexion, abb)
+        }
 	}
 
 	return resultados, nil

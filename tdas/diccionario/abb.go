@@ -1,6 +1,9 @@
 package diccionario
 
-import TDAPila "tdas/pila"
+import (
+	"tdas/cola"
+	TDAPila "tdas/pila"
+)
 
 type nodoAbb[K comparable, V any] struct {
 	izquierdo *nodoAbb[K, V]
@@ -212,4 +215,37 @@ func (iter *iterAbb[K, V]) apilarDesdeHasta(nodo *nodoAbb[K, V]) {
 			nodo = nodo.izquierdo
 		}
 	}
+}
+
+
+//<----------- ejercicio representacion heap ----------->
+
+/*
+Implementar en Go una primitiva que reciba un árbol binario que representa un heap (árbol binario izquierdista, que
+cumple la propiedad de heap), y devuelva la representación en arreglo del heap. La firma de la primitiva debe ser
+RepresentacionArreglo() []T. Indicar y justificar la complejidad de la primitiva. La estructura del árbol binario es:
+type ab[T any] struct {
+izquierda *ab[T]
+derecha *ab[T]
+dato T
+}*/
+
+func (ab *abb[K, V]) RepresentacionArreglo() []V {
+	return ab.raiz.RepresentacionArreglo()
+}
+func (nodo *nodoAbb[K, V]) RepresentacionArreglo() []V {
+	result := make([]V, 0)
+	cola := cola.CrearColaEnlazada[nodoAbb[K, V]]()
+	cola.Encolar(*nodo)
+	for !cola.EstaVacia() {
+		nodo := cola.Desencolar()
+		if nodo.izquierdo != nil {
+			cola.Encolar(*nodo.izquierdo)
+		}
+		if nodo.derecho != nil {
+			cola.Encolar(*nodo.derecho)
+		}
+		result = append(result, nodo.dato)
+	}
+	return result
 }

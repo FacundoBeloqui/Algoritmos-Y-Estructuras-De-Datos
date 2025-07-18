@@ -15,4 +15,6 @@ type Cola[T any] interface {
 	// Desencolar saca el primer elemento de la cola. Si la cola tiene elementos, se quita el primero de la misma,
 	// y se devuelve ese valor. Si está vacía, entra en pánico con un mensaje "La cola esta vacia".
 	Desencolar() T
+
+	Consumir(func(T)) 
 }

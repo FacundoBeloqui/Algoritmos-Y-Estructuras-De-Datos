@@ -7,4 +7,5 @@ use (
 	./TPs/tp2
 	./TPs/tp3
 	./tdas
+	./ejercicios_final
 )

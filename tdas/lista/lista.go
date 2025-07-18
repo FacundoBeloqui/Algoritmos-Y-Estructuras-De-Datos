@@ -31,6 +31,7 @@ type Lista[T any] interface {
 
 	//Iterador crea el iterador externo de la lista. El cual permite recorrer la estructura paso a paso dandole el control al usuario.
 	Iterador() IteradorLista[T]
+
 }
 type IteradorLista[T any] interface {
 	//VerActual devuelve el elemento de la posicion actual del iterador.
@@ -50,4 +51,5 @@ type IteradorLista[T any] interface {
 	//Borrar elimina el elemento de la posicion actual del Iterador.
 	//Si ya termino de iterar entra en panico con un mensaje "El iterador termino de iterar".
 	Borrar() T
+
 }
